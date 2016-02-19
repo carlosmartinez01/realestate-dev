@@ -193,8 +193,8 @@ public class PropertyManagementServiceImpl implements PropertyManagementService 
 	PropertyBean view = null;
 	try {
 	    Property entity = propertyMapper.propertyBeanToProperty(property);
-	    LOGGER.info("Looking for Maverik Company, it must be the first company created");
-	    Company company = companyRepository.findOne(1L);
+	    LOGGER.info("Looking for Maverik Company - It should Maverik to match it");
+	    Company company = companyRepository.findByCompanyName("Maverik");
 	    if (company != null) {
 		Set<Company> c = new HashSet<Company>();
 		c.add(company);
@@ -222,6 +222,7 @@ public class PropertyManagementServiceImpl implements PropertyManagementService 
 	    Property entity = propertyRepository.findOne(property.getId());
 	    Property view = propertyMapper.propertyBeanToProperty(property);
 	    view.setPictureFileName(entity.getPictureFileName());
+	    view.setCompanies(entity.getCompanies());
 	    entity = null;
 	    result = propertyMapper.propertyToPropertyBean(propertyRepository
 		    .save(view));
@@ -1091,6 +1092,7 @@ public class PropertyManagementServiceImpl implements PropertyManagementService 
 	    contract.setPropertyId(result);
 	    result.setContractType(contract);
 	    result.setPictureFileName(entity.getPictureFileName());
+	    result.setCompanies(entity.getCompanies());
 	    entity = null;
 	    result = propertyRepository.save(result);
 	} catch (DataAccessException ex) {
@@ -1453,7 +1455,7 @@ public class PropertyManagementServiceImpl implements PropertyManagementService 
 	    DBException.class })
     public PropertyBean updatePropertyToPermittingTaskPhase(
 	    PropertyPermittingBean permitting) throws GenericException {
-	LOGGER.info("savePropertyPermitting({})", permitting);
+	LOGGER.info("updatePropertyToPermittingTaskPhase({})", permitting);
 
 	try {
 	    Property property = propertyRepository.findOne(permitting
@@ -1809,9 +1811,16 @@ public class PropertyManagementServiceImpl implements PropertyManagementService 
 	try {
 	    Property property = propertyRepository.findOne(propertyId);
 	    List<String> userFullnames = new ArrayList<String>();
-	    property.getUsers().forEach(
-		    user -> userFullnames.add(user.getFirstName() + " "
-			    + user.getLastName()));
+	    property.getCompanies()
+		    .stream()
+		    .filter(company -> company.getCompanyName()
+			    .equalsIgnoreCase("Maverik"))
+		    .forEach(
+			    maverik -> maverik.getUsers().forEach(
+				    user -> userFullnames.add(user
+					    .getFirstName()
+					    + " "
+					    + user.getLastName())));
 	    return userFullnames;
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());

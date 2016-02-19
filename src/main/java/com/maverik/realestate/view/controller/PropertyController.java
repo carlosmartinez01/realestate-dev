@@ -181,7 +181,7 @@ public class PropertyController {
 		    propertyManagementService
 			    .createContractAndUpdateProperty(property);
 		}
-		propertyManagementService.updateProperty(property);
+		// propertyManagementService.updateProperty(property);
 		message = "Update property has been successful";
 	    }
 	    model.addAttribute("messageForm", message);

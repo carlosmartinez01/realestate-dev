@@ -19,6 +19,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.maverik.realestate.domain.entity.Property;
 import com.maverik.realestate.exception.DBException;
 import com.maverik.realestate.exception.GenericException;
+import com.maverik.realestate.exception.NoRecordFoundException;
 import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyRepository;
 import com.maverik.realestate.service.NoteManagementService;
@@ -192,7 +193,7 @@ public class ProjectServiceTest {
     // // Assert.assertNotNull(p.getId());
     // }
 
-    @Test
+    @Test(expected = NoRecordFoundException.class)
     public void testZDeleteProject() throws GenericException {
 	projectService.deleteProject(project);
 	Assert.assertNull(projectService.findByProject(project.getId()));

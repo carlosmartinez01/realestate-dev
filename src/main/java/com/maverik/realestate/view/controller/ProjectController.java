@@ -134,4 +134,18 @@ public class ProjectController {
 
 	return "/secured/preConstruction2";
     }
+
+    @RequestMapping(value = "/{projectId}/summary", method = RequestMethod.GET)
+    public String getProjectSummary(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @PathVariable Long projectId) throws GenericException {
+	LOGGER.info("Get summary for project id {}", projectId);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	model.addAttribute("projectForm",
+		projectManagementService.findByProject(projectId));
+
+	return "/secured/viewProjectSummary";
+    }
 }

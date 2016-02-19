@@ -213,7 +213,7 @@ $.ajax({
 			html = html + '<div class="normal-table">';	
 			html = html + '<div class="normal-row">';
 			html = html + '<div class="normal-column">';
-			html = html + '<a href="<%=request.getContextPath()%>/projects/' + isNull(data[i].id) +'/getAll" id="project-link" class="link-formatter">';
+			html = html + '<a href="<%=request.getContextPath()%>/projects/' + isNull(data[i].id) +'/summary" id="project-link" class="link-formatter">';
 			html = html
 					+ isNull(data[i].projectName);
 			html = html + '</a>';

@@ -18,6 +18,7 @@ import com.maverik.realestate.domain.entity.Property;
 import com.maverik.realestate.domain.entity.User;
 import com.maverik.realestate.exception.DBException;
 import com.maverik.realestate.exception.GenericException;
+import com.maverik.realestate.exception.NoRecordFoundException;
 import com.maverik.realestate.handler.ExceptionHandler;
 import com.maverik.realestate.mapper.ProjectMapper;
 import com.maverik.realestate.repository.ProjectRepository;
@@ -101,10 +102,14 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProjectBean findByProject(Long id) throws DBException {
+    public ProjectBean findByProject(Long id) throws GenericException {
 	ProjectBean project = null;
 	try {
 	    Project entity = projectRepository.findOne(id);
+	    if (entity == null) {
+		throw new NoRecordFoundException("No project found",
+			"No project found for id " + id, "-1");
+	    }
 	    project = projectMapper.projectToProjectBean(entity);
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
