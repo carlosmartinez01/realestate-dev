@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sitemesh>
+	<mapping path="/login" decorator="/WEB-INF/decorators/maverikLogin.jsp" />
+	<mapping path="/reset" decorator="/WEB-INF/decorators/maverikLogin.jsp" />
+	<mapping path="/resetUserPassword" decorator="/WEB-INF/decorators/maverikLogin.jsp" />
+	<mapping path="/note" exclue="true" />
+	<mapping path="/projects/menuNavigation" exclue="true" />
+	<mapping path="/propertyLOI/showLOI/*" exclue="true" />
+	<mapping path="/propertyLease/showLease/*" exclue="true" />
+	<mapping path="/propertyPurchase/showPurchase/*" exclue="true" />
+	<mapping path="/*" decorator="/WEB-INF/decorators/maverik.jsp" />
+</sitemesh>
