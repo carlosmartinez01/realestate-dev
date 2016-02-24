@@ -3,7 +3,7 @@
  */
 package com.maverik.realestate.view.bean;
 
-import com.maverik.realestate.domain.entity.PreConstructionDetails;
+import java.util.List;
 
 /**
  * @author jorge
@@ -11,24 +11,24 @@ import com.maverik.realestate.domain.entity.PreConstructionDetails;
  */
 public class PreConstructionViewBean {
 
-    private ProjectPreConstructionBean preConstruction;
+    private Long projectId;
 
-    private PreConstructionDetails preDetails;
+    private List<ProjectPreConstructionBean> preConstruction;
 
-    public ProjectPreConstructionBean getPreConstruction() {
+    public List<ProjectPreConstructionBean> getPreConstruction() {
 	return preConstruction;
     }
 
-    public void setPreConstruction(ProjectPreConstructionBean preConstruction) {
+    public void setPreConstruction(
+	    List<ProjectPreConstructionBean> preConstruction) {
 	this.preConstruction = preConstruction;
     }
 
-    public PreConstructionDetails getPreDetails() {
-	return preDetails;
+    public Long getProjectId() {
+	return projectId;
     }
 
-    public void setPreDetails(PreConstructionDetails preDetails) {
-	this.preDetails = preDetails;
+    public void setProjectId(Long projectId) {
+	this.projectId = projectId;
     }
-
 }

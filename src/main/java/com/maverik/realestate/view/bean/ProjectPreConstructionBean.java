@@ -4,12 +4,16 @@
 package com.maverik.realestate.view.bean;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
+
+import com.maverik.maverikannotations.sonar.SonarClassExclusion;
 
 /**
  * @author jorge
  *
  */
+@SonarClassExclusion
 public class ProjectPreConstructionBean implements Serializable {
 
     /**
@@ -34,6 +38,8 @@ public class ProjectPreConstructionBean implements Serializable {
     private String permitFee;
 
     private FileBean permitFilename;
+
+    private List<PreConstructionDetailsBean> details;
 
     public Long getId() {
 	return id;
@@ -128,5 +134,13 @@ public class ProjectPreConstructionBean implements Serializable {
 
     public void setDateReceived(String dateReceived) {
 	this.dateReceived = dateReceived;
+    }
+
+    public List<PreConstructionDetailsBean> getDetails() {
+	return details;
+    }
+
+    public void setDetails(List<PreConstructionDetailsBean> details) {
+	this.details = details;
     }
 }

@@ -13,18 +13,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.maverik.realestate.constants.RealEstateConstants.ConstructionDocumentTypes;
+import com.maverik.realestate.constants.RealEstateConstants.ProjectPhases;
 import com.maverik.realestate.domain.entity.Project;
+import com.maverik.realestate.domain.entity.ProjectPreConstruction;
 import com.maverik.realestate.domain.entity.Property;
+import com.maverik.realestate.domain.entity.PropertyPermitting;
 import com.maverik.realestate.domain.entity.User;
 import com.maverik.realestate.exception.DBException;
 import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.exception.NoRecordFoundException;
 import com.maverik.realestate.handler.ExceptionHandler;
+import com.maverik.realestate.mapper.PreConstructionMapper;
 import com.maverik.realestate.mapper.ProjectMapper;
+import com.maverik.realestate.repository.PreConstructionRepository;
 import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyRepository;
 import com.maverik.realestate.repository.UserRepository;
+import com.maverik.realestate.view.bean.PreConstructionViewBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.PropertyBean;
+import com.maverik.realestate.view.bean.PropertyContractViewBean;
 
 @Service
 public class ProjectManagementServiceImpl implements ProjectManagementService {
@@ -50,6 +59,23 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PreConstructionRepository preconstructionRepository;
+
+    @Autowired
+    private PreConstructionMapper preConstructionMapper;
+
+    @Autowired
+    private PropertyManagementService propertyManagementService;
+
+    private static final Byte LAND_USE_PERMITTING_STATUS = 0;
+
+    private static final Byte PRE_CONSTRUCTION_PERMITTING_STATUS = 1;
+
+    private static final Byte PROJECT_MANAGEMENT_STATUS = 2;
+
+    private static final Byte CLOSE_OUT_STATUS = 3;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
 	    GenericException.class, DataAccessException.class,
@@ -67,6 +93,8 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	    }
 	    Project entity = projectMapper.projectBeanToProject(project);
 	    entity.setProperty(property);
+	    entity.setStatus(setProjectStatusBySelectedPhase(project
+		    .getProjectPhase()));
 	    entity = projectRepository.save(entity);
 	    projectBean = projectMapper.projectToProjectBean(entity);
 	} catch (DataAccessException ex) {
@@ -76,6 +104,24 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	}
 
 	return projectBean;
+    }
+
+    private Byte setProjectStatusBySelectedPhase(String phase) {
+	if (phase != null) {
+	    if (phase
+		    .equalsIgnoreCase(ProjectPhases.PRE_CONSTRUCTION_PERMITTING
+			    .toString())) {
+		return PRE_CONSTRUCTION_PERMITTING_STATUS;
+	    } else if (phase.equalsIgnoreCase(ProjectPhases.PROJECT_MANAGEMENT
+		    .toString())) {
+		return PROJECT_MANAGEMENT_STATUS;
+	    } else if (phase.equalsIgnoreCase(ProjectPhases.CLOSE_OUT
+		    .toString())) {
+		return CLOSE_OUT_STATUS;
+	    }
+	}
+
+	return LAND_USE_PERMITTING_STATUS;
     }
 
     @Override
@@ -149,7 +195,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	List<ProjectBean> listProjects = null;
 	try {
 	    List<Project> listEntities = projectRepository
-		    .findByStatus((byte) 1);
+		    .findByStatus((byte) 0);
 	    listProjects = projectMapper
 		    .listOfProjectToListOfProjectBeans(listEntities);
 	} catch (DataAccessException ex) {
@@ -228,17 +274,20 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Boolean checkPreconstructionAvailability(Long projectId)
+    public PreConstructionViewBean getPreConstruction(Long projectId)
 	    throws GenericException {
-	LOGGER.info("checkPreconstructionAvailable({})", projectId);
+	LOGGER.info("getPreConstruction({})", projectId);
 
 	try {
-	    Project project = projectRepository.findOne(projectId);
-	    if (project == null || project.getStatus() > 0) {
-		return Boolean.FALSE;
-	    }
-
-	    return Boolean.TRUE;
+	    Project project = new Project();
+	    project.setId(projectId);
+	    List<ProjectPreConstruction> preConstruction = preconstructionRepository
+		    .findAllByProject(project);
+	    PreConstructionViewBean view = new PreConstructionViewBean();
+	    view.setPreConstruction(preConstructionMapper
+		    .entitiesToBeans(preConstruction));
+	    view.setProjectId(projectId);
+	    return view;
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
 	    LOGGER.info(ex.getMostSpecificCause().toString());
@@ -265,12 +314,97 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	    property.getProjects().forEach(
 		    project -> projects.add(new ProjectBean(project.getId(),
 			    project.getProjectName(), null, null, project
-				    .getProjectType(), null, null)));
+				    .getProjectPhase(), null, null)));
 	    return projects;
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
 	    LOGGER.info(ex.getMostSpecificCause().toString());
 	    throw exceptionHandler.getException(ex);
 	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.maverik.realestate.service.ProjectManagementService#
+     * createNextProjectPhases(com.maverik.realestate.view.bean.PropertyBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public void createNextProjectPhases(PropertyBean property,
+	    ProjectBean project) throws GenericException {
+	LOGGER.info("createNextProjectPhases({})", property);
+	Byte status = project.getStatus();
+	Property propertyEntity = propertyRepository.findOne(property.getId());
+	Project projectEntity = projectRepository.findOne(project.getId());
+	if (status == LAND_USE_PERMITTING_STATUS) {
+	    PropertyPermitting permitting = propertyEntity.getPermitting();
+	    if (permitting == null) {
+		insertLandPermitting(property);
+		insertPreConstruction(projectEntity);
+	    }
+	} else if (status == PRE_CONSTRUCTION_PERMITTING_STATUS) {
+	    if (projectEntity.getPreConstructions() == null) {
+		insertPreConstruction(projectEntity);
+	    }
+	}
+    }
+
+    private void insertLandPermitting(PropertyBean property)
+	    throws GenericException {
+	LOGGER.info("insertLandPermitting({})", property);
+	PropertyContractViewBean contract = new PropertyContractViewBean();
+	contract.setProperty(property);
+	propertyManagementService
+		.createLandPermittingAndUpdateProperty(contract);
+    }
+
+    private void insertPreConstruction(Project projectEntity) {
+	LOGGER.info("insertPreConstruction({})", projectEntity);
+	List<ProjectPreConstruction> preConstructions = new ArrayList<ProjectPreConstruction>();
+	for (ConstructionDocumentTypes type : ConstructionDocumentTypes
+		.values()) {
+	    ProjectPreConstruction preConstruction = new ProjectPreConstruction();
+	    preConstruction.setProject(projectEntity);
+	    preConstruction.setConstructionDocumentType(type.toString());
+	    preConstructions.add(preConstruction);
+	}
+	projectEntity.setPreConstructions(preConstructions);
+	projectRepository.save(projectEntity);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#savePreConstruction
+     * (com.maverik.realestate.view.bean.PreConstructionViewBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public PreConstructionViewBean savePreConstruction(
+	    PreConstructionViewBean bean) throws GenericException {
+	LOGGER.info("savePreConstruction({})", bean);
+
+	List<ProjectPreConstruction> preConstruction = preConstructionMapper
+		.beansToEntities(bean.getPreConstruction());
+	Project projectId = new Project();
+	projectId.setId(bean.getProjectId());
+	// ProjectPreConstruction pre = preConstruction.get(0);
+	preConstruction.forEach(pc -> pc.setProject(projectId));
+	preConstruction.forEach(pc -> {
+	    if (pc.getDetails() != null) {
+		pc.getDetails().forEach(d -> d.setPreConstructionId(pc));
+	    }
+	});
+	bean.setPreConstruction(preConstructionMapper
+		.entitiesToBeans(preconstructionRepository
+			.save(preConstruction)));
+
+	return bean;
     }
 }

@@ -160,4 +160,106 @@ public class RealEstateConstants {
 	    }
 	}
     }
+
+    public enum ProjectPhases {
+	LAND_USE_PERMITTING {
+	    @Override
+	    public String toString() {
+		return "Land Use Permitting";
+	    }
+	},
+	PRE_CONSTRUCTION_PERMITTING {
+	    @Override
+	    public String toString() {
+		return "Pre-Construction Permitting";
+	    }
+	},
+	PROJECT_MANAGEMENT {
+	    @Override
+	    public String toString() {
+		return "Project Management";
+	    }
+	},
+	CLOSE_OUT {
+	    @Override
+	    public String toString() {
+		return "Close-Out";
+	    }
+	}
+    }
+
+    public enum ConstructionDocumentTypes {
+	CITY {
+	    @Override
+	    public String toString() {
+		return "City";
+	    }
+	},
+	HEALTH_DEPARTMENT {
+	    @Override
+	    public String toString() {
+		return "Health Department";
+	    }
+	},
+	FIRE {
+	    @Override
+	    public String toString() {
+		return "Fire";
+	    }
+	},
+	DEQ {
+	    @Override
+	    public String toString() {
+		return "DEQ";
+	    }
+	},
+	IRRIGATION {
+	    @Override
+	    public String toString() {
+		return "Irrigation";
+	    }
+	},
+	WATER {
+	    @Override
+	    public String toString() {
+		return "Water";
+	    }
+	},
+	SEWER {
+	    @Override
+	    public String toString() {
+		return "Sewer";
+	    }
+	},
+	STORM {
+	    @Override
+	    public String toString() {
+		return "Storm";
+	    }
+	},
+	GAS {
+	    @Override
+	    public String toString() {
+		return "Gas";
+	    }
+	},
+	ELECTRIC {
+	    @Override
+	    public String toString() {
+		return "Electric";
+	    }
+	},
+	PHONE_DATA {
+	    @Override
+	    public String toString() {
+		return "Phone/Data";
+	    }
+	},
+	OTHER {
+	    @Override
+	    public String toString() {
+		return "Other";
+	    }
+	}
+    }
 }

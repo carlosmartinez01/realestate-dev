@@ -21,7 +21,7 @@ public class ProjectBean implements Serializable {
 
     private Byte status;
 
-    private String projectType;
+    private String projectPhase;
 
     private PropertyBean property;
 
@@ -41,14 +41,14 @@ public class ProjectBean implements Serializable {
      * @param userId
      */
     public ProjectBean(Long id, String projectName, String description,
-	    Byte status, String projectType, PropertyBean property,
+	    Byte status, String projectPhase, PropertyBean property,
 	    UserBean userId) {
 	super();
 	this.id = id;
 	this.projectName = projectName;
 	this.description = description;
 	this.status = status;
-	this.projectType = projectType;
+	this.projectPhase = projectPhase;
 	this.property = property;
 	this.userId = userId;
     }
@@ -114,19 +114,19 @@ public class ProjectBean implements Serializable {
 	this.userId = userId;
     }
 
-    public String getProjectType() {
-	return projectType;
-    }
-
-    public void setProjectType(String projectType) {
-	this.projectType = projectType;
-    }
-
     public PropertyBean getProperty() {
 	return property;
     }
 
     public void setProperty(PropertyBean property) {
 	this.property = property;
+    }
+
+    public String getProjectPhase() {
+	return projectPhase;
+    }
+
+    public void setProjectPhase(String projectPhase) {
+	this.projectPhase = projectPhase;
     }
 }

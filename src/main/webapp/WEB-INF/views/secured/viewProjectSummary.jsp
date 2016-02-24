@@ -73,25 +73,6 @@ $(document).ready(function() {
 });
 </script>
 
-<script type="text/javascript"
-	note_url='<%=request.getContextPath()%>/note'
-	obj_type='<%=request.getAttribute("objectType")%>'
-	obj_id='<%=request.getAttribute("propertyOID")%>'
-	page_id='edit_property_permitting_task'
-	user_id='<%=request.getAttribute("username")%>'
-	src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
-	
-<script type="text/javascript"
-	root_url='<%=request.getContextPath()%>'
-	property_id='<%=request.getAttribute("propertyOID")%>'
-	user_logged='<%=request.getAttribute("userFullName")%>'
-	src="<%=request.getContextPath()%>/resources/js/taskModal.js"></script>
-	
-<script type="text/javascript"
-	root_url='<%=request.getContextPath()%>'
-	property_id='<%=request.getAttribute("propertyOID")%>'
-	src="<%=request.getContextPath()%>/resources/js/contactModal.js"></script>
-
 </head>
 <body>
 	<div class="buttonList">
@@ -106,24 +87,24 @@ $(document).ready(function() {
 		<div id="boxContent">
 			<div id="page">
 				<div id="content">
-					<h2 class="title">Edit Project - </h2>
+					<h2 class="title">Project Summary</h2>
 					<div class="post">
 						<div class="bg1">
 							<div class="bg2">
 								<div class="bg3">
-									
+									<div class="fixed-table">
+										<div class="normal-row">
+											<div class="normal-column">
+												Project Name:
+											</div>
+											<div class="normal-column">
+												<c:out value="${projectDetails.projectName}" />
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-				</div>
-				<div style="clear: both;">&nbsp;</div>
-				<div style="clear: both;">&nbsp;</div>
-				<div class="divNoteContainer">
-					<div class="noteTitle">Notes</div>
-					<div class="notesDiv">
-						<div class="notesContainer" id="axNotesContainer"></div>
-						<div id="axNoteBox"></div>
 					</div>
 				</div>
 				<div style="clear: both;">&nbsp;</div>

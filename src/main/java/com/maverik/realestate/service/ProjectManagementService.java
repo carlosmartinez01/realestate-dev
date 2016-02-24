@@ -3,7 +3,9 @@ package com.maverik.realestate.service;
 import java.util.List;
 
 import com.maverik.realestate.exception.GenericException;
+import com.maverik.realestate.view.bean.PreConstructionViewBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.PropertyBean;
 
 public interface ProjectManagementService {
 
@@ -28,9 +30,15 @@ public interface ProjectManagementService {
     public ProjectBean addUsersAssignedToProject(Long projectId,
 	    List<Long> users) throws GenericException;
 
-    public Boolean checkPreconstructionAvailability(Long projectId)
+    public PreConstructionViewBean getPreConstruction(Long preConstructionId)
 	    throws GenericException;
 
     public List<ProjectBean> getProjectsByProperty(Long propertyId)
 	    throws GenericException;
+
+    public void createNextProjectPhases(PropertyBean property,
+	    ProjectBean project) throws GenericException;
+
+    public PreConstructionViewBean savePreConstruction(
+	    PreConstructionViewBean bean) throws GenericException;
 }

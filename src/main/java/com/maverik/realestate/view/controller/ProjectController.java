@@ -3,6 +3,7 @@ package com.maverik.realestate.view.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +29,7 @@ import com.maverik.realestate.service.UserManagementService;
 import com.maverik.realestate.view.bean.ActiveUser;
 import com.maverik.realestate.view.bean.PreConstructionViewBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.PropertyBean;
 
 @Controller
 @RequestMapping(value = "/projects")
@@ -93,6 +96,9 @@ public class ProjectController {
 		return response;
 	    }
 	    ProjectBean p = projectManagementService.insertProject(project);
+	    PropertyBean property = new PropertyBean();
+	    property.setId(propertyId);
+	    projectManagementService.createNextProjectPhases(property, p);
 	    if (p == null) {
 		response.setErrorMessage("No valid property!");
 		return response;
@@ -119,33 +125,47 @@ public class ProjectController {
     public String getPreConstruction(Model model,
 	    @AuthenticationPrincipal ActiveUser activeUser,
 	    @PathVariable Long projectId) throws GenericException {
-	LOGGER.info("Get preconstruction permitting for project id {}",
-		projectId);
+	LOGGER.info("Get preconstruction for project id {}", projectId);
 
 	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
 		activeUser.getUserFullName());
-	if (!projectManagementService
-		.checkPreconstructionAvailability(projectId)) {
-	    model.addAttribute("preConstructionForm",
-		    new PreConstructionViewBean());
-	    return "/secured/preConstruction";
-	}
-	model.addAttribute("messageForm", "User added to Project successfully");
+	model.addAttribute("preConstructionForm",
+		projectManagementService.getPreConstruction(projectId));
+	model.addAttribute("projectId", projectId);
 
-	return "/secured/preConstruction2";
+	return "/secured/preConstruction";
     }
 
     @RequestMapping(value = "/{projectId}/summary", method = RequestMethod.GET)
     public String getProjectSummary(Model model,
 	    @AuthenticationPrincipal ActiveUser activeUser,
-	    @PathVariable Long projectId) throws GenericException {
+	    @PathVariable Long projectId, HttpSession session)
+	    throws GenericException {
 	LOGGER.info("Get summary for project id {}", projectId);
 
 	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
 		activeUser.getUserFullName());
-	model.addAttribute("projectForm",
+	model.addAttribute("projectDetails",
 		projectManagementService.findByProject(projectId));
+	session.setAttribute("projectOID", projectId);
 
 	return "/secured/viewProjectSummary";
+    }
+
+    @RequestMapping(value = "/{projectId}/preconstruction/save", method = RequestMethod.POST)
+    public String savePreConstruction(
+	    Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @PathVariable Long projectId,
+	    @ModelAttribute("preConstructionForm") @Valid PreConstructionViewBean bean,
+	    BindingResult result) throws GenericException {
+	LOGGER.info("Save preconstruction for {}", projectId);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	bean.setProjectId(projectId);
+	projectManagementService.savePreConstruction(bean);
+
+	return "/secured/preConstruction";
     }
 }

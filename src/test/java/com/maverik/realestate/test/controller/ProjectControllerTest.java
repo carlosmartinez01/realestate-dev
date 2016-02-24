@@ -108,6 +108,7 @@ public class ProjectControllerTest {
 
     @Test
     public void testZZZDeleteData() throws Exception {
+	property = propertyRepository.findOne(property.getId());
 	propertyRepository.delete(property);
 	Assert.assertNull(propertyRepository.findOne(property.getId()));
     }
@@ -132,7 +133,7 @@ public class ProjectControllerTest {
     public void testBAddProject() throws Exception {
 	ProjectBean p = new ProjectBean();
 	p.setProjectName("Dummy project");
-	p.setProjectType("New Store");
+	p.setProjectPhase("New Store");
 	PropertyBean prop = new PropertyBean();
 	prop.setId(property.getId());
 	p.setProperty(prop);
@@ -160,7 +161,7 @@ public class ProjectControllerTest {
 	ProjectBean p = projectService.findByProjectName("Dummy project");
 	Assert.assertNotNull(p);
 	p.setProjectName("Dummy project");
-	p.setProjectType("New Store");
+	p.setProjectPhase("New Store");
 	mockMvc.perform(
 		post("/project/update/addOrUpdate").session(session)
 			.flashAttr("projectView", p)
@@ -176,7 +177,7 @@ public class ProjectControllerTest {
     public void testEAddProjectModal() throws Exception {
 	ProjectBean p = new ProjectBean();
 	p.setProjectName("Dummy project");
-	p.setProjectType("New Store");
+	p.setProjectPhase("New Store");
 	PropertyBean prop = new PropertyBean();
 	prop.setId(property.getId());
 	p.setProperty(prop);

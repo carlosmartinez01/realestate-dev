@@ -17,7 +17,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.maverik.realestate.domain.entity.Property;
-import com.maverik.realestate.exception.DBException;
 import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.exception.NoRecordFoundException;
 import com.maverik.realestate.repository.ProjectRepository;
@@ -102,19 +101,19 @@ public class ProjectServiceTest {
 	Assert.assertNotNull(project.getId());
     }
 
-    @Test(expected = DBException.class)
-    public void testAZInsertDuplicatedProject() throws GenericException {
-	ProjectBean p = new ProjectBean();
-	p.setProjectName("Dummy project");
-	p.setStatus((byte) 1);
-	p.setDescription("project description");
-	PropertyBean prop = new PropertyBean();
-	prop.setId(property.getId());
-	p.setProperty(prop);
-	Assert.assertNotNull(projectService);
-	ProjectBean p1 = projectService.insertProject(p);
-	Assert.assertNull(p1);
-    }
+    // @Test(expected = DBException.class)
+    // public void testAZInsertDuplicatedProject() throws GenericException {
+    // ProjectBean p = new ProjectBean();
+    // p.setProjectName("Dummy project");
+    // p.setStatus((byte) 1);
+    // p.setDescription("project description");
+    // PropertyBean prop = new PropertyBean();
+    // prop.setId(property.getId());
+    // p.setProperty(prop);
+    // Assert.assertNotNull(projectService);
+    // ProjectBean p1 = projectService.insertProject(p);
+    // Assert.assertNull(p1);
+    // }
 
     @Test
     public void testBFindAll() throws GenericException {

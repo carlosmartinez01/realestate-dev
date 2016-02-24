@@ -105,11 +105,10 @@ function getTaskFormData(propertyId) {
 	var customName = $('#project-custom-type');
 	var phase = $('#project-phase');
 	var parameters = {
-			"property" : {"id":propertyId}, "projectType": type.val(), "projectName": type.val(), "status": 0
+			"property" : {"id":propertyId}, "projectPhase": phase.val(), "projectName": type.val()
 		};
 	if(type.val().toLowerCase() === 'other') {
 		parameters.projectName = customName.val();
-		parameters.projectType = customName.val();
 	}
 	return parameters;
 }

@@ -91,7 +91,7 @@ Property Summary
 	</div>
 	<h3 class="header3"><span class="accordeon-header-font">Construction</span></h3>
 	<div>
-		<a href="<%=request.getContextPath()%>/projects/${sessionScope.propertyOID}/preconstruction">Pre Construction</a>
+		<a href="<%=request.getContextPath()%>/projects/${sessionScope.projectOID}/preconstruction">Pre Construction</a>
 	</div>
 	<h3 class="header3"><span class="accordeon-header-font">Construction Tools</span></h3>
 	<div>

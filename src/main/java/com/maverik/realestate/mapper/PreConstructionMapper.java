@@ -8,9 +8,7 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.maverik.realestate.domain.entity.PreConstructionDetails;
 import com.maverik.realestate.domain.entity.ProjectPreConstruction;
-import com.maverik.realestate.view.bean.PreConstructionDetailsBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 
 /**
@@ -31,18 +29,5 @@ public interface PreConstructionMapper {
 
     List<ProjectPreConstructionBean> entitiesToBeans(
 	    List<ProjectPreConstruction> entities);
-
-    @Mapping(source = "preConstructionId", target = "preConstructionId", ignore = true)
-    PreConstructionDetails beanDetailsToEntityDetails(
-	    PreConstructionDetailsBean bean);
-
-    PreConstructionDetailsBean entityDetailsToBeanDetails(
-	    PreConstructionDetails entity);
-
-    List<PreConstructionDetails> beansDetailsToEntitiesDetails(
-	    List<PreConstructionDetailsBean> beans);
-
-    List<PreConstructionDetailsBean> entitiesDetailsToBeansDetails(
-	    List<PreConstructionDetails> entities);
 
 }

@@ -2,6 +2,7 @@ package com.maverik.realestate.domain.entity;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -17,7 +18,6 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
@@ -47,14 +47,14 @@ public class Project implements Serializable {
     @Column(name = "STATUS", nullable = false)
     private Byte status;
 
-    @Column(name = "projectType", nullable = true, length = 400)
-    private String projectType;
+    @Column(name = "projectPhase", nullable = true, length = 400)
+    private String projectPhase;
 
     @OneToMany(mappedBy = "projectId", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<ProjectNotes> projectNotes = new HashSet<ProjectNotes>();
 
-    @OneToOne(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private ProjectPreConstruction preConstruction;
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ProjectPreConstruction> preConstructions;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "project_user_xref", joinColumns = { @JoinColumn(name = "projectId") }, inverseJoinColumns = { @JoinColumn(name = "userId") })
@@ -136,25 +136,26 @@ public class Project implements Serializable {
 	this.projectNotes = projectNotes;
     }
 
-    public String getProjectType() {
-	return projectType;
-    }
-
-    public void setProjectType(String projectType) {
-	this.projectType = projectType;
-    }
-
     @Override
     public String toString() {
 	return "Project [id=" + id + ", projectName=" + projectName + "]";
     }
 
-    public ProjectPreConstruction getPreConstruction() {
-	return preConstruction;
+    public String getProjectPhase() {
+	return projectPhase;
     }
 
-    public void setPreConstruction(ProjectPreConstruction preConstruction) {
-	this.preConstruction = preConstruction;
+    public void setProjectPhase(String projectPhase) {
+	this.projectPhase = projectPhase;
+    }
+
+    public List<ProjectPreConstruction> getPreConstructions() {
+	return preConstructions;
+    }
+
+    public void setPreConstructions(
+	    List<ProjectPreConstruction> preConstructions) {
+	this.preConstructions = preConstructions;
     }
 
 }

@@ -106,12 +106,47 @@ $(document).ready(function() {
 		<div id="boxContent">
 			<div id="page">
 				<div id="content">
-					<h2 class="title">Edit Project - </h2>
+					<h2 class="title">Edit Project - Construction</h2>
 					<div class="post">
 						<div class="bg1">
 							<div class="bg2">
 								<div class="bg3">
-									
+								<spring:url
+											value="/projects/${requestScope.projectId}/preconstruction/save"
+											var="savePreconstruction" />
+									<form:form modelAttribute="preConstructionForm" action="${savePreconstruction }" method="POST">
+										<div class="normal-table">
+										<c:forEach var="preConstructionLst" varStatus="constructionIndex" items="${preConstructionForm.preConstruction }">
+											<div class="normal-row">
+												<div class="normal-column">
+													<form:hidden path="preConstruction[${constructionIndex.index }].id" />
+													<form:checkbox path="preConstruction[${constructionIndex.index }].checked" value="yes" />
+												</div>
+												<div class="normal-column cell-padding">									
+													<form:hidden path="preConstruction[${constructionIndex.index }].constructionDocumentType" />
+													<c:out value="${preConstructionLst.constructionDocumentType }"></c:out>
+												</div>
+												<div class="normal-column" cell-padding>
+													<form:input path="preConstruction[${constructionIndex.index }].contactName"/>
+												</div>	
+												<c:set var="constructionDetails" value="preConstruction[${constructionIndex.index }].details" scope="request"></c:set>											
+												<c:forEach var="detail" varStatus="detailIndex" items="${preConstructionLst.details }">
+													<div class="normal-row">
+														<div class="normal-column cell-padding">
+															<form:hidden path="preConstruction[${constructionIndex.index }].details[${detailIndex.index }].id" />
+															<form:input path="preConstruction[${constructionIndex.index }].details[${detailIndex.index }].dateReceived"/>
+														</div>
+														<div class="normal-column cell-padding">
+															<form:input path="preConstruction[${constructionIndex.index }].details[${detailIndex.index }].filename.name"/>
+														</div>
+													</div>
+												</c:forEach>																							
+											</div>
+										</c:forEach>
+										</div>
+										<div style="clear: both;">&nbsp;</div>
+											<input class="bttnAction" type="submit" value="Save">
+									</form:form>
 								</div>
 							</div>
 						</div>
