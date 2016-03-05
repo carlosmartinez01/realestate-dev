@@ -15,6 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.maverik.realestate.constants.RealEstateConstants.ConstructionDocumentTypes;
 import com.maverik.realestate.constants.RealEstateConstants.ProjectPhases;
+import com.maverik.realestate.domain.entity.ArchitectDrawing;
+import com.maverik.realestate.domain.entity.Filename;
+import com.maverik.realestate.domain.entity.PreConstructionType;
+import com.maverik.realestate.domain.entity.PreConstructionTypeDetails;
 import com.maverik.realestate.domain.entity.Project;
 import com.maverik.realestate.domain.entity.ProjectPreConstruction;
 import com.maverik.realestate.domain.entity.Property;
@@ -24,14 +28,18 @@ import com.maverik.realestate.exception.DBException;
 import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.exception.NoRecordFoundException;
 import com.maverik.realestate.handler.ExceptionHandler;
+import com.maverik.realestate.mapper.FileMapper;
 import com.maverik.realestate.mapper.PreConstructionMapper;
 import com.maverik.realestate.mapper.ProjectMapper;
+import com.maverik.realestate.repository.FilenameRepository;
+import com.maverik.realestate.repository.PreConstructionDetailRepository;
 import com.maverik.realestate.repository.PreConstructionRepository;
 import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyRepository;
 import com.maverik.realestate.repository.UserRepository;
-import com.maverik.realestate.view.bean.PreConstructionViewBean;
+import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 import com.maverik.realestate.view.bean.PropertyContractViewBean;
 
@@ -49,7 +57,6 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 
     @Autowired
     private PropertyRepository propertyRepository;
-
     @Autowired
     private NoteManagementService noteManagementService;
 
@@ -64,6 +71,15 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 
     @Autowired
     private PreConstructionMapper preConstructionMapper;
+
+    @Autowired
+    private FileMapper fileMapper;
+
+    @Autowired
+    private FilenameRepository fileRepository;
+
+    @Autowired
+    private PreConstructionDetailRepository preConstructionDetailsRepository;
 
     @Autowired
     private PropertyManagementService propertyManagementService;
@@ -274,20 +290,24 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
      */
     @Override
     @Transactional(readOnly = true)
-    public PreConstructionViewBean getPreConstruction(Long projectId)
+    public ProjectPreConstructionBean getPreConstruction(Long projectId)
 	    throws GenericException {
 	LOGGER.info("getPreConstruction({})", projectId);
 
 	try {
 	    Project project = new Project();
 	    project.setId(projectId);
-	    List<ProjectPreConstruction> preConstruction = preconstructionRepository
-		    .findAllByProject(project);
-	    PreConstructionViewBean view = new PreConstructionViewBean();
-	    view.setPreConstruction(preConstructionMapper
-		    .entitiesToBeans(preConstruction));
-	    view.setProjectId(projectId);
-	    return view;
+	    ProjectPreConstruction preConstruction = preconstructionRepository
+		    .findByProject(project);
+	    if (preConstruction == null) {
+		throw new NoRecordFoundException(
+			"No record found por project id ["
+				+ projectId
+				+ "], unable to continue and process the request",
+			"No Preconstruction record found, unable to process your request",
+			"-1");
+	    }
+	    return preConstructionMapper.entityToBean(preConstruction);
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
 	    LOGGER.info(ex.getMostSpecificCause().toString());
@@ -337,18 +357,24 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	    ProjectBean project) throws GenericException {
 	LOGGER.info("createNextProjectPhases({})", property);
 	Byte status = project.getStatus();
-	Property propertyEntity = propertyRepository.findOne(property.getId());
-	Project projectEntity = projectRepository.findOne(project.getId());
-	if (status == LAND_USE_PERMITTING_STATUS) {
-	    PropertyPermitting permitting = propertyEntity.getPermitting();
-	    if (permitting == null) {
-		insertLandPermitting(property);
+	try {
+	    Property propertyEntity = propertyRepository.findOne(property
+		    .getId());
+	    Project projectEntity = projectRepository.findOne(project.getId());
+	    if (status == LAND_USE_PERMITTING_STATUS) {
+		PropertyPermitting permitting = propertyEntity.getPermitting();
+		if (permitting == null) {
+		    insertLandPermitting(property);
+		    insertPreConstruction(projectEntity);
+		}
+	    } else if (status == PRE_CONSTRUCTION_PERMITTING_STATUS
+		    && projectEntity.getPreConstruction() == null) {
 		insertPreConstruction(projectEntity);
 	    }
-	} else if (status == PRE_CONSTRUCTION_PERMITTING_STATUS) {
-	    if (projectEntity.getPreConstructions() == null) {
-		insertPreConstruction(projectEntity);
-	    }
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
 	}
     }
 
@@ -363,15 +389,16 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 
     private void insertPreConstruction(Project projectEntity) {
 	LOGGER.info("insertPreConstruction({})", projectEntity);
-	List<ProjectPreConstruction> preConstructions = new ArrayList<ProjectPreConstruction>();
+	ProjectPreConstruction preConstruction = new ProjectPreConstruction();
+	preConstruction.setProject(projectEntity);
 	for (ConstructionDocumentTypes type : ConstructionDocumentTypes
 		.values()) {
-	    ProjectPreConstruction preConstruction = new ProjectPreConstruction();
-	    preConstruction.setProject(projectEntity);
-	    preConstruction.setConstructionDocumentType(type.toString());
-	    preConstructions.add(preConstruction);
+	    PreConstructionType documentType = new PreConstructionType();
+	    documentType.setConstructionDocumentType(type.toString());
+	    documentType.setPreConstruction(preConstruction);
+	    preConstruction.addTypes(documentType);
 	}
-	projectEntity.setPreConstructions(preConstructions);
+	projectEntity.setPreConstruction(preConstruction);
 	projectRepository.save(projectEntity);
     }
 
@@ -386,25 +413,157 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
 	    GenericException.class, DataAccessException.class,
 	    DBException.class })
-    public PreConstructionViewBean savePreConstruction(
-	    PreConstructionViewBean bean) throws GenericException {
+    public ProjectPreConstructionBean savePreConstruction(
+	    ProjectPreConstructionBean bean) throws GenericException {
 	LOGGER.info("savePreConstruction({})", bean);
 
-	List<ProjectPreConstruction> preConstruction = preConstructionMapper
-		.beansToEntities(bean.getPreConstruction());
-	Project projectId = new Project();
-	projectId.setId(bean.getProjectId());
-	// ProjectPreConstruction pre = preConstruction.get(0);
-	preConstruction.forEach(pc -> pc.setProject(projectId));
-	preConstruction.forEach(pc -> {
-	    if (pc.getDetails() != null) {
-		pc.getDetails().forEach(d -> d.setPreConstructionId(pc));
-	    }
-	});
-	bean.setPreConstruction(preConstructionMapper
-		.entitiesToBeans(preconstructionRepository
-			.save(preConstruction)));
+	try {
+	    ProjectPreConstruction preConstruction = preConstructionMapper
+		    .beanToEntity(bean);
+	    Project projectId = projectRepository.findOne(bean.getProject());
+	    preConstruction.setPermitFilename(projectId.getPreConstruction()
+		    .getPermitFilename());
+	    preConstruction.setProject(projectId);
+	    preConstruction
+		    .getDetails()
+		    .forEach(
+			    types -> {
+				types.setPreConstruction(preConstruction);
+				if (types.getTypeDetails() != null) {
+				    types.getTypeDetails()
+					    .forEach(
+						    detail -> {
+							detail.setPreConstructionTypeId(types);
+							if (detail
+								.getFilename() != null
+								&& detail
+									.getFilename()
+									.getId() != null) {
+							    detail.setFilename(fileRepository
+								    .findOne(detail
+									    .getFilename()
+									    .getId()));
+							} else {
+							    detail.setFilename(null);
+							}
+						    });
+				}
+			    });
+	    projectId.setPreConstruction(null);
+	    return preConstructionMapper.entityToBean(preconstructionRepository
+		    .save(preConstruction));
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
 
-	return bean;
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.maverik.realestate.service.ProjectManagementService#
+     * addPreConstructionDetailFile(com.maverik.realestate.view.bean.FileBean,
+     * java.lang.Long)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public FileBean addPreConstructionDetailFile(FileBean fileBean,
+	    Long preConstructionDetailId) throws GenericException {
+	LOGGER.info("addPreConstructionDetailFile({}{})", fileBean,
+		preConstructionDetailId);
+
+	Filename file = null;
+	try {
+	    file = fileMapper.fileBeanToFile(fileBean);
+	    file = fileRepository.save(file);
+	    PreConstructionTypeDetails entity = preConstructionDetailsRepository
+		    .findOne(preConstructionDetailId);
+	    if (entity == null) {
+		throw new NoRecordFoundException(
+			"Unable to save file and preconstruction detail records, following data has been submitted => ["
+				+ preConstructionDetailId + "," + file + "]",
+			"No record found related with id "
+				+ preConstructionDetailId, "-1");
+	    }
+	    entity.setFilename(file);
+	    preConstructionDetailsRepository.save(entity);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+
+	return fileMapper.fileToFileBean(file);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.maverik.realestate.service.ProjectManagementService#
+     * addPreConstructionPermitFile(com.maverik.realestate.view.bean.FileBean,
+     * java.lang.Long)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public FileBean addPreConstructionPermitFile(FileBean fileBean,
+	    Long preConstructionId) throws GenericException {
+	LOGGER.info("addPreConstructionPermitFile({}{})", fileBean,
+		preConstructionId);
+
+	Filename file = null;
+	try {
+	    file = fileMapper.fileBeanToFile(fileBean);
+	    file = fileRepository.save(file);
+	    ProjectPreConstruction entity = preconstructionRepository
+		    .findOne(preConstructionId);
+	    if (entity == null) {
+		throw new NoRecordFoundException(
+			"Unable to save file and preconstruction detail records, following data has been submitted => ["
+				+ preConstructionId + "," + file + "]",
+			"No record found related with id " + preConstructionId,
+			"-1");
+	    }
+	    entity.setPermitFilename(file);
+	    preconstructionRepository.save(entity);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+
+	return fileMapper.fileToFileBean(file);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#getArchitectDrawing
+     * (java.lang.Long)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ArchitectDrawing> getArchitectDrawing(Long preConstructionId)
+	    throws GenericException {
+	LOGGER.info("getArchitectDrawing({})", preConstructionId);
+
+	try {
+	    ProjectPreConstruction preConstruction = preconstructionRepository
+		    .findOne(preConstructionId);
+	    List<ArchitectDrawing> architectDrawings = preConstruction
+		    .getDrawings();
+	    architectDrawings.stream().filter(drawings -> drawings != null)
+		    .forEach(drawing -> drawing.getDrawingDetails());
+	    return architectDrawings;
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
     }
 }

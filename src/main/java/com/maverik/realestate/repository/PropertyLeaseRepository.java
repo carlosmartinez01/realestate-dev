@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.maverik.realestate.domain.entity.Property;
 import com.maverik.realestate.domain.entity.PropertyLease;
@@ -17,6 +18,7 @@ import com.maverik.realestate.domain.entity.PropertyLease;
  * @author jorge
  *
  */
+@Repository
 public interface PropertyLeaseRepository extends
 	JpaRepository<PropertyLease, Long> {
 

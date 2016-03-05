@@ -27,7 +27,10 @@
 		<jpa:class>com.maverik.realestate.domain.entity.PermittingAssignmentTask</jpa:class>
 		<jpa:class>com.maverik.realestate.domain.entity.PermittingContact</jpa:class>
 		<jpa:class>com.maverik.realestate.domain.entity.ProjectPreConstruction</jpa:class>
-		<jpa:class>com.maverik.realestate.domain.entity.PreConstructionDetails</jpa:class>
+		<jpa:class>com.maverik.realestate.domain.entity.PreConstructionType</jpa:class>
+		<jpa:class>com.maverik.realestate.domain.entity.PreConstructionTypeDetails</jpa:class>
+		<jpa:class>com.maverik.realestate.domain.entity.ArchitectDrawing</jpa:class>
+		<jpa:class>com.maverik.realestate.domain.entity.ArchitectDrawingDetails</jpa:class>
 		<jpa:provider>org.hibernate.ejb.HibernatePersistence</jpa:provider>
 		<jpa:properties>
 			<jpa:property name="hibernate.dialect"

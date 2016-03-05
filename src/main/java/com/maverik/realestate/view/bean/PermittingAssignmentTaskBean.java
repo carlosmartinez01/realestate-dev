@@ -9,10 +9,13 @@ import java.util.Objects;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.maverik.maverikannotations.sonar.SonarClassExclusion;
+
 /**
  * @author jorge
  *
  */
+@SonarClassExclusion
 public class PermittingAssignmentTaskBean implements Serializable {
 
     /**

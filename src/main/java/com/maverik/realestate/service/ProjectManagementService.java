@@ -2,9 +2,11 @@ package com.maverik.realestate.service;
 
 import java.util.List;
 
+import com.maverik.realestate.domain.entity.ArchitectDrawing;
 import com.maverik.realestate.exception.GenericException;
-import com.maverik.realestate.view.bean.PreConstructionViewBean;
+import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 
 public interface ProjectManagementService {
@@ -30,7 +32,10 @@ public interface ProjectManagementService {
     public ProjectBean addUsersAssignedToProject(Long projectId,
 	    List<Long> users) throws GenericException;
 
-    public PreConstructionViewBean getPreConstruction(Long preConstructionId)
+    public ProjectPreConstructionBean getPreConstruction(Long projectId)
+	    throws GenericException;
+
+    public List<ArchitectDrawing> getArchitectDrawing(Long preConstructionId)
 	    throws GenericException;
 
     public List<ProjectBean> getProjectsByProperty(Long propertyId)
@@ -39,6 +44,13 @@ public interface ProjectManagementService {
     public void createNextProjectPhases(PropertyBean property,
 	    ProjectBean project) throws GenericException;
 
-    public PreConstructionViewBean savePreConstruction(
-	    PreConstructionViewBean bean) throws GenericException;
+    public ProjectPreConstructionBean savePreConstruction(
+	    ProjectPreConstructionBean bean) throws GenericException;
+
+    public FileBean addPreConstructionDetailFile(FileBean fileBean,
+	    Long preConstructionDetailId) throws GenericException;
+
+    public FileBean addPreConstructionPermitFile(FileBean fileBean,
+	    Long preConstructionId) throws GenericException;
+
 }

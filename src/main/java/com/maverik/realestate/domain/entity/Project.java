@@ -2,7 +2,6 @@ package com.maverik.realestate.domain.entity;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -18,6 +17,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
@@ -53,8 +53,8 @@ public class Project implements Serializable {
     @OneToMany(mappedBy = "projectId", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<ProjectNotes> projectNotes = new HashSet<ProjectNotes>();
 
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<ProjectPreConstruction> preConstructions;
+    @OneToOne(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private ProjectPreConstruction preConstruction;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "project_user_xref", joinColumns = { @JoinColumn(name = "projectId") }, inverseJoinColumns = { @JoinColumn(name = "userId") })
@@ -149,13 +149,12 @@ public class Project implements Serializable {
 	this.projectPhase = projectPhase;
     }
 
-    public List<ProjectPreConstruction> getPreConstructions() {
-	return preConstructions;
+    public ProjectPreConstruction getPreConstruction() {
+	return preConstruction;
     }
 
-    public void setPreConstructions(
-	    List<ProjectPreConstruction> preConstructions) {
-	this.preConstructions = preConstructions;
+    public void setPreConstruction(ProjectPreConstruction preConstruction) {
+	this.preConstruction = preConstruction;
     }
 
 }

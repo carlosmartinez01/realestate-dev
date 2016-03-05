@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.maverik.realestate.view.bean.FileBean;
+
 /**
  * @author jorge
  *
@@ -39,6 +41,12 @@ public class FileManagementServiceImpl implements FileManagementService {
     @Value("${property.permitting.file}")
     private String propertyFilePermitting;
 
+    @Value("${preconstruction.detail.file}")
+    private String preConstructionDetail;
+
+    @Value("${preconstruction.permit.file}")
+    private String preConstructionPermit;
+
     @Value("${webapp.dir}")
     private String webappDir;
 
@@ -49,11 +57,12 @@ public class FileManagementServiceImpl implements FileManagementService {
      * com.maverik.realestate.service.FileManagementService#uploadPictureFile()
      */
     @Override
-    public String uploadPropertyFile(MultipartFile file) throws IOException {
+    public FileBean uploadPropertyFile(MultipartFile file) throws IOException {
 	LOGGER.info("uploadPictureFile({})", file);
 
-	return webappDir + "/property/"
-		+ uploadFile(file, propertyFileLocation);
+	FileBean bean = uploadFile(file, propertyFileLocation, "/property/");
+	bean.setAbsolutePath(bean.getAbsolutePath());
+	return bean;
     }
 
     /*
@@ -64,8 +73,8 @@ public class FileManagementServiceImpl implements FileManagementService {
      * lang.String, java.lang.String)
      */
     @Override
-    public String uploadFile(MultipartFile source, String target)
-	    throws IOException {
+    public FileBean uploadFile(MultipartFile source, String target,
+	    String outputDir) throws IOException {
 	LOGGER.info("uploadFile({},{})", source.getOriginalFilename(), target);
 
 	File dir = new File(target);
@@ -80,8 +89,10 @@ public class FileManagementServiceImpl implements FileManagementService {
 		new FileOutputStream(localFile));
 	stream.write(bytes);
 	stream.close();
+	FileBean fileBean = new FileBean();
+	fileBean.setAbsolutePath(webappDir + outputDir + localFile.getName());
 
-	return localFile.getName();
+	return fileBean;
     }
 
     /*
@@ -92,10 +103,10 @@ public class FileManagementServiceImpl implements FileManagementService {
      * .springframework.web.multipart.MultipartFile)
      */
     @Override
-    public String uploadLOIFile(MultipartFile file) throws IOException {
+    public FileBean uploadLOIFile(MultipartFile file) throws IOException {
 	LOGGER.info("uploadLOIFile({})", file);
 
-	return uploadFile(file, propertyFileLOILocation);
+	return uploadFile(file, propertyFileLOILocation, "/property/loi/");
     }
 
     /*
@@ -106,10 +117,10 @@ public class FileManagementServiceImpl implements FileManagementService {
      * org.springframework.web.multipart.MultipartFile)
      */
     @Override
-    public String uploadLeaseFile(MultipartFile file) throws IOException {
+    public FileBean uploadLeaseFile(MultipartFile file) throws IOException {
 	LOGGER.info("uploadLeaseFile({})", file);
 
-	return uploadFile(file, propertyFileLeaseLocation);
+	return uploadFile(file, propertyFileLeaseLocation, "/property/lease/");
     }
 
     /*
@@ -120,10 +131,11 @@ public class FileManagementServiceImpl implements FileManagementService {
      * (org.springframework.web.multipart.MultipartFile)
      */
     @Override
-    public String uploadPurchaseFile(MultipartFile file) throws IOException {
+    public FileBean uploadPurchaseFile(MultipartFile file) throws IOException {
 	LOGGER.info("uploadPurchaseFile({})", file);
 
-	return uploadFile(file, propertyFilePurchaseLocation);
+	return uploadFile(file, propertyFilePurchaseLocation,
+		"/property/purchase/");
     }
 
     /*
@@ -134,10 +146,47 @@ public class FileManagementServiceImpl implements FileManagementService {
      * (org.springframework.web.multipart.MultipartFile)
      */
     @Override
-    public String uploadPermittingFile(MultipartFile file) throws IOException {
+    public FileBean uploadPermittingFile(MultipartFile file) throws IOException {
 	LOGGER.info("uploadPermittingFile({})", file);
 
-	return uploadFile(file, propertyFilePermitting);
+	return uploadFile(file, propertyFilePermitting, "/property/permitting/");
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.maverik.realestate.service.FileManagementService#
+     * uploadPreConstructionDetailFile
+     * (org.springframework.web.multipart.MultipartFile)
+     */
+    @Override
+    public FileBean uploadPreConstructionDetailFile(MultipartFile file)
+	    throws IOException {
+	LOGGER.info("uploadPreConstructionDetailFile({})", file);
+
+	FileBean bean = uploadFile(file, preConstructionDetail,
+		"/project/preconstruction/detail/");
+	bean.setAbsolutePath(bean.getAbsolutePath());
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.maverik.realestate.service.FileManagementService#
+     * uploadPreConstructionPermitFile
+     * (org.springframework.web.multipart.MultipartFile)
+     */
+    @Override
+    public FileBean uploadPreConstructionPermitFile(MultipartFile file)
+	    throws IOException {
+	LOGGER.info("uploadPreConstructionDetailFile({})", file);
+
+	FileBean bean = uploadFile(file, preConstructionPermit,
+		"/project/preconstruction/permit/");
+	bean.setAbsolutePath(bean.getAbsolutePath());
+
+	return bean;
+    }
 }

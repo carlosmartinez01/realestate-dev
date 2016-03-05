@@ -7,13 +7,14 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.maverik.maverikannotations.sonar.SonarClassExclusion;
+import com.maverik.realestate.response.AbstractResponse;
 
 /**
  * @author jorge
  *
  */
 @SonarClassExclusion
-public class FileBean implements Serializable {
+public class FileBean extends AbstractResponse implements Serializable {
 
     /**
      * long serialVersionUID

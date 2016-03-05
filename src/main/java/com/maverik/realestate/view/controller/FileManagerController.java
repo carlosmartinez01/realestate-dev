@@ -20,6 +20,7 @@ import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.response.FileResponse;
 import com.maverik.realestate.response.GenericResponse;
 import com.maverik.realestate.service.FileManagementService;
+import com.maverik.realestate.service.ProjectManagementService;
 import com.maverik.realestate.service.PropertyManagementService;
 import com.maverik.realestate.view.bean.FileBean;
 
@@ -41,11 +42,18 @@ public class FileManagerController {
 
     private static final String FAILED_MESSAGE = "You failed to upload ";
 
+    private static final String MESSAGE_FILE_SIZE_LIMIT = "The file size limit is 8MB.";
+
+    private static final long FILE_MAX_SIZE = 8192000;
+
     @Autowired
     private FileManagementService fileService;
 
     @Autowired
     private PropertyManagementService propertyManagementService;
+
+    @Autowired
+    private ProjectManagementService projectManagementService;
 
     @RequestMapping(value = "/property/picture/{propertyId}/upload", method = RequestMethod.POST)
     @ResponseBody
@@ -58,8 +66,7 @@ public class FileManagerController {
 	FileResponse response = new FileResponse();
 	if (!file.isEmpty()) {
 	    try {
-		String absolutePath = fileService.uploadPropertyFile(file);
-		fileBean.setAbsolutePath(absolutePath);
+		fileBean = fileService.uploadPropertyFile(file);
 		fileBean.setName(file.getOriginalFilename());
 		response.setSuccessMessage(SUCCESS_MESSAGE + fileBean.getName()
 			+ "!");
@@ -89,8 +96,7 @@ public class FileManagerController {
 	FileResponse response = new FileResponse();
 	if (!file.isEmpty()) {
 	    try {
-		String absolutePath = fileService.uploadPropertyFile(file);
-		fileBean.setAbsolutePath(absolutePath);
+		fileBean = fileService.uploadPropertyFile(file);
 		fileBean.setName(file.getOriginalFilename());
 		propertyManagementService.addRECSOFile(fileBean, contractId);
 		response.setSuccessMessage(SUCCESS_MESSAGE + fileBean.getName()
@@ -121,8 +127,7 @@ public class FileManagerController {
 	FileResponse response = new FileResponse();
 	if (!file.isEmpty()) {
 	    try {
-		String absolutePath = fileService.uploadPropertyFile(file);
-		fileBean.setAbsolutePath(absolutePath);
+		fileBean = fileService.uploadPropertyFile(file);
 		fileBean.setName(file.getOriginalFilename());
 		propertyManagementService.addTitleCommitmentFile(fileBean,
 			contractId);
@@ -154,8 +159,7 @@ public class FileManagerController {
 	FileResponse response = new FileResponse();
 	if (!file.isEmpty()) {
 	    try {
-		String absolutePath = fileService.uploadPropertyFile(file);
-		fileBean.setAbsolutePath(absolutePath);
+		fileBean = fileService.uploadPropertyFile(file);
 		fileBean.setName(file.getOriginalFilename());
 		propertyManagementService.addTitlePolicyFile(fileBean,
 			contractId);
@@ -186,8 +190,7 @@ public class FileManagerController {
 	FileResponse response = new FileResponse();
 	if (!file.isEmpty()) {
 	    try {
-		String absolutePath = fileService.uploadPropertyFile(file);
-		fileBean.setAbsolutePath(absolutePath);
+		fileBean = fileService.uploadPropertyFile(file);
 		fileBean.setName(file.getOriginalFilename());
 		propertyManagementService.addSettlementFile(fileBean,
 			contractId);
@@ -217,11 +220,10 @@ public class FileManagerController {
 	GenericResponse response = new GenericResponse();
 	if (!file.isEmpty()) {
 	    try {
-		String absolutePath = fileService.uploadLOIFile(file);
-		fileBean.setAbsolutePath(absolutePath);
+		fileBean = fileService.uploadLOIFile(file);
 		fileBean.setName(file.getOriginalFilename());
-		response.setSuccessMessage("You successfully uploaded LOI file "
-			+ fileBean.getName() + "!");
+		response.setSuccessMessage(SUCCESS_MESSAGE + fileBean.getName()
+			+ "!");
 		propertyManagementService.createLOIAndAddFile(fileBean,
 			propertyId);
 	    } catch (IOException | GenericException e) {
@@ -247,8 +249,7 @@ public class FileManagerController {
 	GenericResponse response = new GenericResponse();
 	if (!file.isEmpty()) {
 	    try {
-		String absolutePath = fileService.uploadLeaseFile(file);
-		fileBean.setAbsolutePath(absolutePath);
+		fileBean = fileService.uploadLeaseFile(file);
 		fileBean.setName(file.getOriginalFilename());
 		response.setSuccessMessage("You successfully uploaded Lease file "
 			+ fileBean.getName() + "!");
@@ -277,8 +278,7 @@ public class FileManagerController {
 	GenericResponse response = new GenericResponse();
 	if (!file.isEmpty()) {
 	    try {
-		String absolutePath = fileService.uploadPurchaseFile(file);
-		fileBean.setAbsolutePath(absolutePath);
+		fileBean = fileService.uploadPurchaseFile(file);
 		fileBean.setName(file.getOriginalFilename());
 		response.setSuccessMessage("You successfully uploaded Purchase file "
 			+ fileBean.getName() + "!");
@@ -476,9 +476,74 @@ public class FileManagerController {
 	LOGGER.info("uploadPermittingFiles({})", file.getContentType());
 
 	FileBean fileBean = new FileBean();
-	String absolutePath = fileService.uploadPermittingFile(file);
-	fileBean.setAbsolutePath(absolutePath);
+	fileBean = fileService.uploadPermittingFile(file);
 	fileBean.setName(file.getOriginalFilename());
+
+	return fileBean;
+    }
+
+    @RequestMapping(value = "/preconstruction/{detailId}/file/upload", method = RequestMethod.POST)
+    @ResponseBody
+    public FileBean uploadPreConstructionDetailFiles(
+	    @RequestParam("file") MultipartFile file,
+	    @PathVariable Long detailId) {
+	LOGGER.info("Uploading preconsturction detail file {} to server", file);
+
+	FileBean fileBean = new FileBean();
+	if (!file.isEmpty()) {
+	    LOGGER.info("File content type is " + file.getContentType());
+	    if (file.getSize() > FILE_MAX_SIZE) {
+		fileBean.setErrorMessage(MESSAGE_FILE_SIZE_LIMIT);
+		return fileBean;
+	    }
+	    try {
+		fileBean = fileService.uploadPreConstructionDetailFile(file);
+		fileBean.setName(file.getOriginalFilename());
+		fileBean = projectManagementService
+			.addPreConstructionDetailFile(fileBean, detailId);
+		fileBean.setSuccessMessage(SUCCESS_MESSAGE + fileBean.getName()
+			+ "!");
+	    } catch (IOException | GenericException e) {
+		LOGGER.info("" + e);
+		fileBean.setErrorMessage(FAILED_MESSAGE + fileBean.getName()
+			+ " => " + e.getMessage());
+	    }
+	} else {
+	    fileBean.setErrorMessage(EMPTY_FILE_MESSAGE);
+	}
+
+	return fileBean;
+    }
+
+    @RequestMapping(value = "/preconstruction/{detailId}/permit/file/upload", method = RequestMethod.POST)
+    @ResponseBody
+    public FileBean uploadPreConstructionFile(
+	    @RequestParam("file") MultipartFile file,
+	    @PathVariable Long detailId) {
+	LOGGER.info("Uploading preconsturction permit file {} to server", file);
+
+	FileBean fileBean = new FileBean();
+	if (!file.isEmpty()) {
+	    LOGGER.info("File content type is " + file.getContentType());
+	    if (file.getSize() > FILE_MAX_SIZE) {
+		fileBean.setErrorMessage(MESSAGE_FILE_SIZE_LIMIT);
+		return fileBean;
+	    }
+	    try {
+		fileBean = fileService.uploadPreConstructionPermitFile(file);
+		fileBean.setName(file.getOriginalFilename());
+		fileBean = projectManagementService
+			.addPreConstructionPermitFile(fileBean, detailId);
+		fileBean.setSuccessMessage(SUCCESS_MESSAGE + fileBean.getName()
+			+ "!");
+	    } catch (IOException | GenericException e) {
+		LOGGER.info("" + e);
+		fileBean.setErrorMessage(FAILED_MESSAGE + fileBean.getName()
+			+ " => " + e.getMessage());
+	    }
+	} else {
+	    fileBean.setErrorMessage(EMPTY_FILE_MESSAGE);
+	}
 
 	return fileBean;
     }

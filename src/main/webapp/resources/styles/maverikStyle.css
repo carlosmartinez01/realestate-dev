@@ -1410,6 +1410,10 @@ a.tooltip span
 	color: #3190ff;
 }
 
+.fa-calendar-plus-o {
+	color: #000000;
+}
+
 .accordeon-header-font {
 	color: #ffffff;
 }
@@ -1435,9 +1439,42 @@ a.tooltip span
 	text-align: left;
 }
 
+.separator-table {
+	display: table;
+	width: 99%;
+}
+
+.separator-column {
+	display: table-cell;
+	width: 100%;
+	text-align: left;
+}
+
 .fixed-table {
 	display: table;
 	width: 250px;
+	text-align: left;
+}
+
+.preconstruction-fixed-table {
+	display: table;
+	width: 450px;
+	text-align: left;
+}
+
+.modal-fixed-table {
+	display: table;
+	width: 250px;
+	text-align: left;
+}
+
+.modal-row {
+	display: table-row;
+}
+
+.modal-column {
+	display: table-cell;
+	width: 50%;
 	text-align: left;
 }
 
@@ -1460,4 +1497,24 @@ a.tooltip span
 
 .cell-padding {
 	padding: 1px 8px 1px 5px;
+}
+
+.files-link {
+	font-weight: bold;
+	text-decoration: none;
+	color: #0076ff;
+	font-size: 13px;
+}
+
+.files-link:HOVER {
+	font-weight: bold;
+	text-decoration: underline;
+	color: #0076ff;
+	font-size: 13px;
+}
+
+#horizontal-separator {
+	background-color: #c8c8c8;
+	background-repeat: repeat;
+	height: 2px;
 }

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.maverik.realestate.constants.RealEstateConstants.RequestParams;
 import com.maverik.realestate.exception.GenericException;
@@ -27,8 +28,8 @@ import com.maverik.realestate.response.GenericResponse;
 import com.maverik.realestate.service.ProjectManagementService;
 import com.maverik.realestate.service.UserManagementService;
 import com.maverik.realestate.view.bean.ActiveUser;
-import com.maverik.realestate.view.bean.PreConstructionViewBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 
 @Controller
@@ -129,8 +130,11 @@ public class ProjectController {
 
 	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
 		activeUser.getUserFullName());
-	model.addAttribute("preConstructionForm",
-		projectManagementService.getPreConstruction(projectId));
+	ProjectPreConstructionBean bean = projectManagementService
+		.getPreConstruction(projectId);
+	bean.setDrawings(projectManagementService.getArchitectDrawing(bean
+		.getId()));
+	model.addAttribute("preConstructionForm", bean);
 	model.addAttribute("projectId", projectId);
 
 	return "/secured/preConstruction";
@@ -157,15 +161,24 @@ public class ProjectController {
 	    Model model,
 	    @AuthenticationPrincipal ActiveUser activeUser,
 	    @PathVariable Long projectId,
-	    @ModelAttribute("preConstructionForm") @Valid PreConstructionViewBean bean,
-	    BindingResult result) throws GenericException {
+	    @ModelAttribute("preConstructionForm") @Valid ProjectPreConstructionBean bean,
+	    BindingResult result, final RedirectAttributes redirectAttributes)
+	    throws GenericException {
 	LOGGER.info("Save preconstruction for {}", projectId);
 
-	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
-		activeUser.getUserFullName());
-	bean.setProjectId(projectId);
-	projectManagementService.savePreConstruction(bean);
+	if (result.hasErrors()) {
+	    model.addAttribute("messageForm", "The form has some errors");
+	    return "/secured/preConstruction";
+	}
+	bean = projectManagementService.savePreConstruction(bean);
+	bean.setDrawings(projectManagementService.getArchitectDrawing(bean
+		.getId()));
+	model.addAttribute("preConstructionForm", bean);
+	model.addAttribute("messageForm", "Update Successfully");
+	// redirectAttributes.addAttribute("messageForm",
+	// "Update Successfully");
 
+	// return "redirect:/projects/" + projectId + "/preconstruction";
 	return "/secured/preConstruction";
     }
 }

@@ -4,6 +4,10 @@
 package com.maverik.realestate.domain.entity;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +23,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.maverik.maverikannotations.sonar.SonarClassExclusion;
 
@@ -36,6 +41,9 @@ public class ProjectPreConstruction implements Serializable {
      */
     private static final long serialVersionUID = -6493227320879775544L;
 
+    @Transient
+    private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID", nullable = false, updatable = false, insertable = false)
@@ -45,20 +53,14 @@ public class ProjectPreConstruction implements Serializable {
     @JoinColumn(name = "projectId")
     private Project project;
 
-    @Column(name = "constructionDocumentType", nullable = false, length = 400)
-    private String constructionDocumentType;
-
-    @Column(name = "checked", nullable = true, length = 10)
-    private String checked;
-
-    @Column(name = "contactName")
-    private String contactName;
-
     @Column(name = "readyForPickUp")
     private String readyForPickUp;
 
     @Column(name = "dateReceived")
     private Date dateReceived;
+
+    @Transient
+    private String dateReceivedAsString;
 
     @Column(name = "permitFee")
     private String permitFee;
@@ -67,8 +69,15 @@ public class ProjectPreConstruction implements Serializable {
     @JoinColumn(name = "permitFilename_id")
     private Filename permitFilename;
 
-    @OneToMany(mappedBy = "preConstructionId", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<PreConstructionDetails> details;
+    @OneToMany(mappedBy = "preConstruction", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<PreConstructionType> details = new ArrayList<PreConstructionType>();
+
+    @OneToMany(mappedBy = "preConstruction", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ArchitectDrawing> drawings = new ArrayList<ArchitectDrawing>();
+
+    public void addTypes(PreConstructionType e) {
+	details.add(e);
+    }
 
     public Long getId() {
 	return id;
@@ -84,22 +93,6 @@ public class ProjectPreConstruction implements Serializable {
 
     public void setProject(Project project) {
 	this.project = project;
-    }
-
-    public String getChecked() {
-	return checked;
-    }
-
-    public void setChecked(String checked) {
-	this.checked = checked;
-    }
-
-    public String getContactName() {
-	return contactName;
-    }
-
-    public void setContactName(String contactName) {
-	this.contactName = contactName;
     }
 
     @Override
@@ -118,26 +111,17 @@ public class ProjectPreConstruction implements Serializable {
 		&& Objects.equals(this.project.getId(), other.project.getId());
     }
 
-    public String getConstructionDocumentType() {
-	return constructionDocumentType;
-    }
-
-    public void setConstructionDocumentType(String constructionDocumentType) {
-	this.constructionDocumentType = constructionDocumentType;
-    }
-
     @Override
     public String toString() {
 	return "ProjectPreConstruction [id=" + id + ", project=" + project
-		+ ", constructionDocumentType=" + constructionDocumentType
 		+ "]";
     }
 
-    public List<PreConstructionDetails> getDetails() {
+    public List<PreConstructionType> getDetails() {
 	return details;
     }
 
-    public void setDetails(List<PreConstructionDetails> details) {
+    public void setDetails(List<PreConstructionType> details) {
 	this.details = details;
     }
 
@@ -171,5 +155,26 @@ public class ProjectPreConstruction implements Serializable {
 
     public void setPermitFilename(Filename permitFilename) {
 	this.permitFilename = permitFilename;
+    }
+
+    public String getDateReceivedAsString() {
+	return dateReceivedAsString;
+    }
+
+    public void setDateReceivedAsString(String dateReceivedAsString)
+	    throws DateTimeParseException {
+	this.dateReceivedAsString = dateReceivedAsString;
+	if (dateReceivedAsString != null) {
+	    LocalDate date = LocalDate.parse(dateReceivedAsString, dtf);
+	    this.dateReceived = new Date(date.toEpochDay());
+	}
+    }
+
+    public List<ArchitectDrawing> getDrawings() {
+	return drawings;
+    }
+
+    public void setDrawings(List<ArchitectDrawing> drawings) {
+	this.drawings = drawings;
     }
 }

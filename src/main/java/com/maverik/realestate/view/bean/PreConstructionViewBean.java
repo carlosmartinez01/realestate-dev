@@ -5,6 +5,10 @@ package com.maverik.realestate.view.bean;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
+import com.maverik.realestate.domain.entity.ProjectPreConstruction;
+
 /**
  * @author jorge
  *
@@ -13,14 +17,14 @@ public class PreConstructionViewBean {
 
     private Long projectId;
 
-    private List<ProjectPreConstructionBean> preConstruction;
+    @Valid
+    private List<ProjectPreConstruction> preConstruction;
 
-    public List<ProjectPreConstructionBean> getPreConstruction() {
+    public List<ProjectPreConstruction> getPreConstruction() {
 	return preConstruction;
     }
 
-    public void setPreConstruction(
-	    List<ProjectPreConstructionBean> preConstruction) {
+    public void setPreConstruction(List<ProjectPreConstruction> preConstruction) {
 	this.preConstruction = preConstruction;
     }
 
