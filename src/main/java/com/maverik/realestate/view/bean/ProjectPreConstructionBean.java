@@ -4,10 +4,16 @@
 package com.maverik.realestate.view.bean;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import javax.validation.Valid;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.maverik.maverikannotations.sonar.SonarClassExclusion;
+import com.maverik.realestate.domain.entity.ArchitectDrawing;
 
 /**
  * @author jorge
@@ -25,66 +31,23 @@ public class ProjectPreConstructionBean implements Serializable {
 
     private Long project;
 
-    private String constructionDocumentType;
-
-    private String checked;
-
-    private String contactName;
-
     private String readyForPickUp;
 
+    @NotEmpty(message = "Date is mandatory field")
     private String dateReceived;
 
     private String permitFee;
 
     private FileBean permitFilename;
 
-    private List<PreConstructionDetailsBean> details;
+    @Valid
+    private List<PreConstructionTypeBean> details = new ArrayList<PreConstructionTypeBean>();
 
-    public Long getId() {
-	return id;
-    }
-
-    public void setId(Long id) {
-	this.id = id;
-    }
-
-    public Long getProject() {
-	return project;
-    }
-
-    public void setProject(Long project) {
-	this.project = project;
-    }
-
-    public String getConstructionDocumentType() {
-	return constructionDocumentType;
-    }
-
-    public void setConstructionDocumentType(String constructionDocumentType) {
-	this.constructionDocumentType = constructionDocumentType;
-    }
-
-    public String getChecked() {
-	return checked;
-    }
-
-    public void setChecked(String checked) {
-	this.checked = checked;
-    }
-
-    public String getContactName() {
-	return contactName;
-    }
-
-    public void setContactName(String contactName) {
-	this.contactName = contactName;
-    }
+    private List<ArchitectDrawing> drawings = new ArrayList<ArchitectDrawing>();
 
     @Override
     public String toString() {
 	return "ProjectPreConstructionBean [id=" + id + ", project=" + project
-		+ ", constructionDocumentType=" + constructionDocumentType
 		+ "]";
     }
 
@@ -104,12 +67,36 @@ public class ProjectPreConstructionBean implements Serializable {
 		&& Objects.equals(this.project, other.project);
     }
 
+    public Long getId() {
+	return id;
+    }
+
+    public void setId(Long id) {
+	this.id = id;
+    }
+
+    public Long getProject() {
+	return project;
+    }
+
+    public void setProject(Long project) {
+	this.project = project;
+    }
+
     public String getReadyForPickUp() {
 	return readyForPickUp;
     }
 
     public void setReadyForPickUp(String readyForPickUp) {
 	this.readyForPickUp = readyForPickUp;
+    }
+
+    public String getDateReceived() {
+	return dateReceived;
+    }
+
+    public void setDateReceived(String dateReceived) {
+	this.dateReceived = dateReceived;
     }
 
     public String getPermitFee() {
@@ -128,19 +115,19 @@ public class ProjectPreConstructionBean implements Serializable {
 	this.permitFilename = permitFilename;
     }
 
-    public String getDateReceived() {
-	return dateReceived;
-    }
-
-    public void setDateReceived(String dateReceived) {
-	this.dateReceived = dateReceived;
-    }
-
-    public List<PreConstructionDetailsBean> getDetails() {
+    public List<PreConstructionTypeBean> getDetails() {
 	return details;
     }
 
-    public void setDetails(List<PreConstructionDetailsBean> details) {
+    public void setDetails(List<PreConstructionTypeBean> details) {
 	this.details = details;
+    }
+
+    public List<ArchitectDrawing> getDrawings() {
+	return drawings;
+    }
+
+    public void setDrawings(List<ArchitectDrawing> drawings) {
+	this.drawings = drawings;
     }
 }

@@ -1,6 +1,7 @@
 <!doctype html>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@ page session="false"%>
 <html>
@@ -83,15 +84,22 @@ $(document).ready(function() {
 	
 <script type="text/javascript"
 	root_url='<%=request.getContextPath()%>'
-	property_id='<%=request.getAttribute("propertyOID")%>'
-	user_logged='<%=request.getAttribute("userFullName")%>'
-	src="<%=request.getContextPath()%>/resources/js/taskModal.js"></script>
+	src="<%=request.getContextPath()%>/resources/js/preConstruction.js"></script>
 	
-<script type="text/javascript"
+	<script type="text/javascript"
 	root_url='<%=request.getContextPath()%>'
-	property_id='<%=request.getAttribute("propertyOID")%>'
-	src="<%=request.getContextPath()%>/resources/js/contactModal.js"></script>
+	preconstruction_id='${preConstructionForm.id }'
+	src="<%=request.getContextPath()%>/resources/js/architectModal.js"></script>
 
+<script type="text/javascript">
+$(function() {
+	$('#loader-gif').hide();
+	$('#success-msg').hide();
+	$('#error-msg').hide();
+	$('#server-msg').hide();
+	$('#general-msg').delay(2100).fadeToggle(800, 'linear');
+});
+</script>
 </head>
 <body>
 	<div class="buttonList">
@@ -111,42 +119,110 @@ $(document).ready(function() {
 						<div class="bg1">
 							<div class="bg2">
 								<div class="bg3">
+								<div id="success-msg" class="msg"></div>
+								<div id="error-msg" class="error"></div>
+								<div id="server-msg" class="error"></div>
+								<c:if test="${not empty messageForm}">
+										<div id=general-msg class="msg">${messageForm}</div>
+								</c:if>
 								<spring:url
 											value="/projects/${requestScope.projectId}/preconstruction/save"
 											var="savePreconstruction" />
 									<form:form modelAttribute="preConstructionForm" action="${savePreconstruction }" method="POST">
+									<form:hidden path="id" />
+									<form:hidden path="project" />
 										<div class="normal-table">
-										<c:forEach var="preConstructionLst" varStatus="constructionIndex" items="${preConstructionForm.preConstruction }">
+										<c:forEach var="types" varStatus="typesIndex" items="${preConstructionForm.details }">
 											<div class="normal-row">
 												<div class="normal-column">
-													<form:hidden path="preConstruction[${constructionIndex.index }].id" />
-													<form:checkbox path="preConstruction[${constructionIndex.index }].checked" value="yes" />
+													<form:hidden path="details[${typesIndex.index }].id" />
+													<form:checkbox path="details[${typesIndex.index }].checked" value="yes" />
 												</div>
 												<div class="normal-column cell-padding">									
-													<form:hidden path="preConstruction[${constructionIndex.index }].constructionDocumentType" />
-													<c:out value="${preConstructionLst.constructionDocumentType }"></c:out>
+													<form:hidden path="details[${typesIndex.index }].constructionDocumentType" />
+													<c:out value="${types.constructionDocumentType }"></c:out>
 												</div>
-												<div class="normal-column" cell-padding>
-													<form:input path="preConstruction[${constructionIndex.index }].contactName"/>
-												</div>	
-												<c:set var="constructionDetails" value="preConstruction[${constructionIndex.index }].details" scope="request"></c:set>											
-												<c:forEach var="detail" varStatus="detailIndex" items="${preConstructionLst.details }">
+												<div class="normal-column cell-padding">
+													<form:input path="details[${typesIndex.index }].contactName"/>
+												</div>
+												<input type="hidden" id="outter-${types.id }" value="${typesIndex.index }">
+												<c:forEach var="detail" varStatus="detailIndex" items="${types.typeDetails }">
+													<input type="hidden" id="inner-${types.id }" value="${fn:length(types.typeDetails)}">
 													<div class="normal-row">
 														<div class="normal-column cell-padding">
-															<form:hidden path="preConstruction[${constructionIndex.index }].details[${detailIndex.index }].id" />
-															<form:input path="preConstruction[${constructionIndex.index }].details[${detailIndex.index }].dateReceived"/>
+															<form:hidden path="details[${typesIndex.index }].typeDetails[${detailIndex.index }].id" />
+															<form:input cssClass="construction-dates" id="date-${typesIndex.index}-${detailIndex.index }" size="12" path="details[${typesIndex.index }].typeDetails[${detailIndex.index }].dateReceived" readonly="true"/>
 														</div>
+														<form:errors path="details[${typesIndex.index }].typeDetails[${detailIndex.index }].dateReceived" cssClass="errorValMsg"
+																	element="div" />
 														<div class="normal-column cell-padding">
-															<form:input path="preConstruction[${constructionIndex.index }].details[${detailIndex.index }].filename.name"/>
+															<input type="file" id="file-${detail.id }" value="Choose File" />
+															<button id="button-${detail.id }" class="button-upload">Upload</button>
+															<span id="filename-${detail.id }" ><a id="file-link-${detail.id }" class="files-link" href="${detail.filename.absolutePath}"><c:out value="${detail.filename.name}"></c:out></a></span>
+															<form:hidden path="details[${typesIndex.index }].typeDetails[${detailIndex.index }].filename.id" id="fileId-${detail.id}" />
 														</div>
 													</div>
-												</c:forEach>																							
+												</c:forEach>												
+												<div id="add-new-elements-${types.id }"></div>
+												<div class="normal-column">
+													<i id="${types.id }" class="fa fa-plus-circle fa-lg add-button-array"></i>
+												</div>																				
 											</div>
 										</c:forEach>
 										</div>
 										<div style="clear: both;">&nbsp;</div>
+										<div class="separator-table">
+											<div class="normal-row">
+												<div class="separator-column">
+													<div id="horizontal-separator"></div>
+												</div>
+											</div>
+										</div>
+										<div style="clear: both;">&nbsp;</div>
+										Architect Drawing Progress&nbsp;<button id="open-drawings" class="bttnAction" value="Save">View</button>
+										<div class="preconstruction-fixed-table">
+											<div style="clear: both;">&nbsp;</div>
+											<div class="normal-row">
+												<div class="normal-column cell-padding">
+													<form:checkbox path="readyForPickUp" value="yes" />
+													Building Permit Ready for Pickup Date
+												</div>
+												<div class="normal-column cell-padding">
+													Date Received
+													<form:input path="dateReceived" cssClass="construction-dates" size="12" readonly="yes" />
+												</div>
+												<div class="normal-column cell-padding">
+													<input type="file" id="file-permit" value="Choose File" />
+													<button id="button-${preConstructionForm.id }" class="permit-upload">Upload</button>
+													<span id="filename-permit"><a id="file-link-permit" class="files-link" href="${preConstructionForm.permitFilename.absolutePath}"><c:out value="${preConstructionForm.permitFilename.name}"></c:out></a></span>
+													<form:hidden path="permitFilename.id" id="fileId-permit" />
+												</div>
+											</div>
+											<div class="normal-row">
+												<div class="normal-column cell-padding">
+													Permit Fee &#36;
+													<form:input path="permitFee"/>
+												</div>
+											</div>
+										</div>
+										<div style="clear: both;">&nbsp;</div>
 											<input class="bttnAction" type="submit" value="Save">
 									</form:form>
+									<div id="dialog-drawing-form" title="Architect Drawing Progress">
+										<div id="display-drawing-message"></div>
+										<form>
+											<fieldset>
+												<label for="drawing-progress">Architect Drawing Progress</label>
+												<div style="clear: both;">&nbsp;</div>
+												<div class="modal-fixed-table">
+												<c:out value="${preConstructionForm.drawings}"></c:out>
+																									
+												</div>
+													<input type="submit" tabindex="-1"
+													style="position: absolute; top: -1000px">														
+											</fieldset>
+										</form>
+									</div>
 								</div>
 							</div>
 						</div>
