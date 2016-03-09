@@ -4,6 +4,7 @@
 package com.maverik.realestate.view.bean;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -13,7 +14,6 @@ import javax.validation.Valid;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.maverik.maverikannotations.sonar.SonarClassExclusion;
-import com.maverik.realestate.domain.entity.ArchitectDrawing;
 
 /**
  * @author jorge
@@ -36,14 +36,15 @@ public class ProjectPreConstructionBean implements Serializable {
     @NotEmpty(message = "Date is mandatory field")
     private String dateReceived;
 
-    private String permitFee;
+    private BigDecimal permitFee;
 
     private FileBean permitFilename;
 
     @Valid
     private List<PreConstructionTypeBean> details = new ArrayList<PreConstructionTypeBean>();
 
-    private List<ArchitectDrawing> drawings = new ArrayList<ArchitectDrawing>();
+    @Valid
+    private List<ArchitectDrawingBean> drawings = new ArrayList<ArchitectDrawingBean>();
 
     @Override
     public String toString() {
@@ -99,11 +100,11 @@ public class ProjectPreConstructionBean implements Serializable {
 	this.dateReceived = dateReceived;
     }
 
-    public String getPermitFee() {
+    public BigDecimal getPermitFee() {
 	return permitFee;
     }
 
-    public void setPermitFee(String permitFee) {
+    public void setPermitFee(BigDecimal permitFee) {
 	this.permitFee = permitFee;
     }
 
@@ -123,11 +124,11 @@ public class ProjectPreConstructionBean implements Serializable {
 	this.details = details;
     }
 
-    public List<ArchitectDrawing> getDrawings() {
+    public List<ArchitectDrawingBean> getDrawings() {
 	return drawings;
     }
 
-    public void setDrawings(List<ArchitectDrawing> drawings) {
+    public void setDrawings(List<ArchitectDrawingBean> drawings) {
 	this.drawings = drawings;
     }
 }

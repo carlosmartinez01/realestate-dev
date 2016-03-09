@@ -86,7 +86,7 @@ $(document).ready(function() {
 	root_url='<%=request.getContextPath()%>'
 	src="<%=request.getContextPath()%>/resources/js/preConstruction.js"></script>
 	
-	<script type="text/javascript"
+<script type="text/javascript"
 	root_url='<%=request.getContextPath()%>'
 	preconstruction_id='${preConstructionForm.id }'
 	src="<%=request.getContextPath()%>/resources/js/architectModal.js"></script>
@@ -189,7 +189,7 @@ $(function() {
 												</div>
 												<div class="normal-column cell-padding">
 													Date Received
-													<form:input path="dateReceived" cssClass="construction-dates" size="12" readonly="yes" />
+													<form:input id="date-received" path="dateReceived" cssClass="construction-dates" size="12" readonly="yes" />
 												</div>
 												<div class="normal-column cell-padding">
 													<input type="file" id="file-permit" value="Choose File" />
@@ -212,11 +212,34 @@ $(function() {
 										<div id="display-drawing-message"></div>
 										<form>
 											<fieldset>
-												<label for="drawing-progress">Architect Drawing Progress</label>
-												<div style="clear: both;">&nbsp;</div>
 												<div class="modal-fixed-table">
-												<c:out value="${preConstructionForm.drawings}"></c:out>
-																									
+												<c:forEach var="drawing" varStatus="drawingIndex" items="${preConstructionForm.drawings }">
+												<input type="hidden" id="parent-${drawing.id }" value="${drawing.id }">
+													<div class="modal-row">
+														<div class="modal-column cell-padding">
+															<input type="checkbox" id="${drawing.type }-${drawing.id }" class="text ui-widget-content ui-corner-all form-checkbox" value="Yes">
+															<input type="hidden" id="check-${drawing.type }-${drawing.id }" value="${drawing.completed }" class="hidden-checkbox">
+															<label for="${drawing.type }-${drawing.id }"><c:out value="${drawing.type }"></c:out></label>
+														</div>
+														<div id="parent-${drawing.type }-${drawing.id }">
+														<c:forEach var="drawingDetail" varStatus="detailIndex" items="${drawing.drawingDetails }">														
+															<div class="modal-row">
+																<div class="modal-column cell-padding">
+																		<input type="hidden" id="child-${drawing.id }" value="${fn:length(drawing.drawingDetails)}">
+																		<input type="hidden" id="drawing_details-${drawingDetail.id }" class="form-dates-${drawing.id }">
+																		<input type="text" size="12" id="date-${drawing.id }-${drawingDetail.id}" readonly="readonly" class="construction-dates dates-group-${drawing.id }"
+																		 value="${drawingDetail.drawingDate }">
+																</div>
+															</div>
+														</c:forEach>
+														<div id="add-dates-elements-${drawing.id }"></div>
+														</div>
+														<div class="modal-column">
+															<i id="${drawing.id }" class="fa fa-calendar-plus-o fa-lg add-dates-array"></i>
+														</div>
+													</div>
+													<br>
+												</c:forEach>																																					
 												</div>
 													<input type="submit" tabindex="-1"
 													style="position: absolute; top: -1000px">														

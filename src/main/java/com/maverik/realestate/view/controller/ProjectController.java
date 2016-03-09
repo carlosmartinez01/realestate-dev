@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.maverik.realestate.constants.RealEstateConstants.RequestParams;
 import com.maverik.realestate.exception.GenericException;
@@ -28,6 +27,7 @@ import com.maverik.realestate.response.GenericResponse;
 import com.maverik.realestate.service.ProjectManagementService;
 import com.maverik.realestate.service.UserManagementService;
 import com.maverik.realestate.view.bean.ActiveUser;
+import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.ProjectBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
@@ -162,8 +162,7 @@ public class ProjectController {
 	    @AuthenticationPrincipal ActiveUser activeUser,
 	    @PathVariable Long projectId,
 	    @ModelAttribute("preConstructionForm") @Valid ProjectPreConstructionBean bean,
-	    BindingResult result, final RedirectAttributes redirectAttributes)
-	    throws GenericException {
+	    BindingResult result) throws GenericException {
 	LOGGER.info("Save preconstruction for {}", projectId);
 
 	if (result.hasErrors()) {
@@ -180,5 +179,40 @@ public class ProjectController {
 
 	// return "redirect:/projects/" + projectId + "/preconstruction";
 	return "/secured/preConstruction";
+    }
+
+    @RequestMapping(value = "/{preconstructionId}/architect/save", method = RequestMethod.POST)
+    @ResponseBody
+    public GenericResponse saveArchitectDrawingDetails(
+	    @PathVariable Long preconstructionId,
+	    @RequestBody @Valid ProjectPreConstructionBean bean,
+	    BindingResult result) {
+	LOGGER.info("Save architect drawing details for preconstruction id {}",
+		preconstructionId);
+
+	GenericResponse response = new GenericResponse();
+	if (result.hasErrors()) {
+	    response.setErrorMessage(result.getFieldError().getDefaultMessage());
+	    return response;
+	}
+	try {
+	    bean.setId(preconstructionId);
+	    projectManagementService.saveDrawingDetails(bean);
+	    response.setSuccessMessage("Architect Drawings was save successfully");
+	} catch (GenericException e) {
+	    response.setErrorMessage("Unable to save Architect Drawings");
+	}
+
+	return response;
+    }
+
+    @RequestMapping(value = "/{preconstructionId}/get/drawings", method = RequestMethod.POST)
+    @ResponseBody
+    public List<ArchitectDrawingBean> getUpdateDrawingDetails(
+	    @PathVariable Long preconstructionId) throws GenericException {
+	LOGGER.info("Get updated drawings for preconstruction id {}",
+		preconstructionId);
+
+	return projectManagementService.getArchitectDrawing(preconstructionId);
     }
 }

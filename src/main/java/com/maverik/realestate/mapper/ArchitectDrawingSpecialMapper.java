@@ -59,4 +59,33 @@ public class ArchitectDrawingSpecialMapper {
 
 	return bean;
     }
+
+    public List<ArchitectDrawingDetails> asListOfEntities(
+	    List<ArchitectDrawingDetailsBean> beans) {
+	if (beans == null) {
+	    return null;
+	}
+
+	List<ArchitectDrawingDetails> entities = new ArrayList<ArchitectDrawingDetails>();
+	for (ArchitectDrawingDetailsBean bean : beans) {
+	    entities.add(asArchitectDrawingDetails(bean));
+	}
+
+	return entities;
+    }
+
+    public ArchitectDrawingDetails asArchitectDrawingDetails(
+	    ArchitectDrawingDetailsBean bean) {
+	if (bean == null) {
+	    return null;
+	}
+
+	ArchitectDrawingDetails entity = new ArchitectDrawingDetails();
+	entity.setId(bean.getId());
+	DateTimeFormatter dtf = DateTimeFormat.forPattern("MM/dd/yyyy");
+	DateTime time = dtf.parseDateTime(bean.getDrawingDate());
+	entity.setDrawingDate(time.toDate());
+
+	return entity;
+    }
 }

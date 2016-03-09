@@ -2,8 +2,8 @@ package com.maverik.realestate.service;
 
 import java.util.List;
 
-import com.maverik.realestate.domain.entity.ArchitectDrawing;
 import com.maverik.realestate.exception.GenericException;
+import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
@@ -35,7 +35,7 @@ public interface ProjectManagementService {
     public ProjectPreConstructionBean getPreConstruction(Long projectId)
 	    throws GenericException;
 
-    public List<ArchitectDrawing> getArchitectDrawing(Long preConstructionId)
+    public List<ArchitectDrawingBean> getArchitectDrawing(Long preConstructionId)
 	    throws GenericException;
 
     public List<ProjectBean> getProjectsByProperty(Long propertyId)
@@ -52,5 +52,8 @@ public interface ProjectManagementService {
 
     public FileBean addPreConstructionPermitFile(FileBean fileBean,
 	    Long preConstructionId) throws GenericException;
+
+    public List<ArchitectDrawingBean> saveDrawingDetails(
+	    ProjectPreConstructionBean bean) throws GenericException;
 
 }

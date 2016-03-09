@@ -28,6 +28,7 @@ import com.maverik.realestate.exception.DBException;
 import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.exception.NoRecordFoundException;
 import com.maverik.realestate.handler.ExceptionHandler;
+import com.maverik.realestate.mapper.ArchitectDrawingMapper;
 import com.maverik.realestate.mapper.FileMapper;
 import com.maverik.realestate.mapper.PreConstructionMapper;
 import com.maverik.realestate.mapper.ProjectMapper;
@@ -37,6 +38,7 @@ import com.maverik.realestate.repository.PreConstructionRepository;
 import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyRepository;
 import com.maverik.realestate.repository.UserRepository;
+import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
@@ -84,6 +86,9 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     @Autowired
     private PropertyManagementService propertyManagementService;
 
+    @Autowired
+    private ArchitectDrawingMapper architectMapper;
+
     private static final Byte LAND_USE_PERMITTING_STATUS = 0;
 
     private static final Byte PRE_CONSTRUCTION_PERMITTING_STATUS = 1;
@@ -91,6 +96,8 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     private static final Byte PROJECT_MANAGEMENT_STATUS = 2;
 
     private static final Byte CLOSE_OUT_STATUS = 3;
+
+    private static final String NO_RECORD_FOUND_ID = "No record found related with id ";
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
@@ -548,18 +555,57 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<ArchitectDrawing> getArchitectDrawing(Long preConstructionId)
+    public List<ArchitectDrawingBean> getArchitectDrawing(Long preConstructionId)
 	    throws GenericException {
 	LOGGER.info("getArchitectDrawing({})", preConstructionId);
 
 	try {
 	    ProjectPreConstruction preConstruction = preconstructionRepository
 		    .findOne(preConstructionId);
-	    List<ArchitectDrawing> architectDrawings = preConstruction
-		    .getDrawings();
-	    architectDrawings.stream().filter(drawings -> drawings != null)
-		    .forEach(drawing -> drawing.getDrawingDetails());
+	    List<ArchitectDrawingBean> architectDrawings = architectMapper
+		    .entitiesToBeans(preConstruction.getDrawings());
 	    return architectDrawings;
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#saveDrawingDetails
+     * (com.maverik.realestate.view.bean.ArchitectDrawingBean)
+     */
+    @Override
+    public List<ArchitectDrawingBean> saveDrawingDetails(
+	    ProjectPreConstructionBean bean) throws GenericException {
+	LOGGER.info("saveDrawingDetails({})", bean);
+
+	try {
+	    ProjectPreConstruction preConstruction = preconstructionRepository
+		    .findOne(bean.getId());
+	    if (preConstruction == null) {
+		throw new NoRecordFoundException(
+			"Unable to find preConstruction object, following data has been submitted => ["
+				+ bean.getId() + "]", NO_RECORD_FOUND_ID, "-1");
+	    }
+	    List<ArchitectDrawing> drawings = architectMapper
+		    .beansToEntities(bean.getDrawings());
+	    drawings.forEach(drawing -> drawing
+		    .setPreConstruction(preConstruction));
+	    drawings.stream()
+		    .filter(drawing -> drawing.getDrawingDetails() != null)
+		    .forEach(
+			    drawing -> drawing.getDrawingDetails().forEach(
+				    details -> details
+					    .setArchitectDrawing(drawing)));
+	    preConstruction.setDrawings(drawings);
+	    preconstructionRepository.save(preConstruction);
+	    return architectMapper.entitiesToBeans(preConstruction
+		    .getDrawings());
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
 	    LOGGER.info(ex.getMostSpecificCause().toString());

@@ -6,6 +6,8 @@ package com.maverik.realestate.view.bean;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.maverik.maverikannotations.sonar.SonarClassExclusion;
 
 /**
@@ -24,6 +26,7 @@ public class ArchitectDrawingDetailsBean implements Serializable {
 
     private Long architectDrawingId;
 
+    @NotEmpty(message = "Dates are mandatory")
     private String drawingDate;
 
     public Long getId() {

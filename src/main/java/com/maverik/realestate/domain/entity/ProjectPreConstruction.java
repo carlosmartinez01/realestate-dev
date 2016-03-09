@@ -4,6 +4,7 @@
 package com.maverik.realestate.domain.entity;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -63,7 +64,7 @@ public class ProjectPreConstruction implements Serializable {
     private String dateReceivedAsString;
 
     @Column(name = "permitFee")
-    private String permitFee;
+    private BigDecimal permitFee;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "permitFilename_id")
@@ -141,11 +142,11 @@ public class ProjectPreConstruction implements Serializable {
 	this.dateReceived = dateReceived;
     }
 
-    public String getPermitFee() {
+    public BigDecimal getPermitFee() {
 	return permitFee;
     }
 
-    public void setPermitFee(String permitFee) {
+    public void setPermitFee(BigDecimal permitFee) {
 	this.permitFee = permitFee;
     }
 

@@ -20,8 +20,10 @@ import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 public interface PreConstructionMapper {
 
     @Mapping(source = "project", target = "project", ignore = true)
+    @Mapping(source = "drawings", target = "drawings", ignore = true)
     ProjectPreConstruction beanToEntity(ProjectPreConstructionBean bean);
 
+    @Mapping(source = "drawings", target = "drawings", ignore = true)
     ProjectPreConstructionBean entityToBean(ProjectPreConstruction entity);
 
     List<ProjectPreConstruction> beansToEntities(
