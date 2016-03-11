@@ -77,8 +77,8 @@ $(document).ready(function() {
 <script type="text/javascript"
 	note_url='<%=request.getContextPath()%>/note'
 	obj_type='<%=request.getAttribute("objectType")%>'
-	obj_id='<%=request.getAttribute("propertyOID")%>'
-	page_id='edit_property_permitting_task'
+	obj_id='<%=request.getAttribute("projectOID")%>'
+	page_id='edit_project_preconstruction'
 	user_id='<%=request.getAttribute("username")%>'
 	src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
 	
@@ -126,7 +126,7 @@ $(function() {
 										<div id=general-msg class="msg">${messageForm}</div>
 								</c:if>
 								<spring:url
-											value="/projects/${requestScope.projectId}/preconstruction/save"
+											value="/projects/${requestScope.projectOID}/preconstruction/save"
 											var="savePreconstruction" />
 									<form:form modelAttribute="preConstructionForm" action="${savePreconstruction }" method="POST">
 									<form:hidden path="id" />

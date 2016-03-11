@@ -20,7 +20,13 @@
 			<appender-ref ref="STDOUT" level="info" />
 			<appender-ref ref="fileLog" />
 		</Root>
-		<Logger name="org.hibernate.pretty" level="info" />
-		<Logger name="org.hibernate.SQL" level="info" />
+		<Logger name="org.hibernate.pretty" level="info">
+			<AppenderRef ref="STDOUT" />
+			<AppenderRef ref="fileLog" />
+		</Logger>
+		<Logger name="org.hibernate.SQL" level="info">
+			<AppenderRef ref="STDOUT" />
+			<AppenderRef ref="fileLog" />
+		</Logger>
 	</Loggers>
 </Configuration>

@@ -64,15 +64,16 @@ public class NoteController {
 	return notes;
     }
 
-    @RequestMapping(value = "/{project}/{projectId}/showNotes", method = RequestMethod.GET)
+    @RequestMapping(value = "/project/{projectId}/{pageName}/showNotes", method = RequestMethod.GET)
     @ResponseBody
-    public List<NoteBean> showProjectNotes(@PathVariable Long projectId)
-	    throws GenericException {
+    public List<NoteBean> showProjectNotes(@PathVariable Long projectId,
+	    @PathVariable String pageName) throws GenericException {
 	LOGGER.info("NoteController - Getting notes for project id {}",
 		projectId);
 
+	PageBean page = pageManagementService.findByPageName(pageName);
 	List<NoteBean> notes = noteManagementService.findNotesByProject(
-		projectId, 1L); // change to page id variable
+		projectId, page.getId());
 	Collections.sort(notes);
 
 	return notes;
@@ -107,8 +108,31 @@ public class NoteController {
 	GenericResponse response = new GenericResponse();
 	try {
 	    PageBean page = pageManagementService.findByPageName(pageName);
-	    user = userManagementService.getUserProfileActive(userId, (byte) 0);
+	    user = userManagementService.getActiveUserProfile(userId);
 	    noteManagementService.insertNoteByProperty(propertyId, notes, user,
+		    page.getId());
+	} catch (GenericException e) {
+	    response.setErrorMessage(NOTE_ADD_ERROR_MSG);
+	    LOGGER.info("" + e);
+	}
+	response.setSuccessMessage("Note added");
+
+	return response;
+    }
+
+    @RequestMapping(value = "/project/{projectId}/{pageName}/{userId}/addNote", method = RequestMethod.POST)
+    @ResponseBody
+    public GenericResponse addNoteToProject(@PathVariable Long projectId,
+	    @PathVariable String pageName, @PathVariable String userId,
+	    @RequestParam(value = "notesText") String notes) {
+	LOGGER.info("NoteController - Add a note to Project id {}", projectId);
+
+	UserBean user;
+	GenericResponse response = new GenericResponse();
+	try {
+	    PageBean page = pageManagementService.findByPageName(pageName);
+	    user = userManagementService.getActiveUserProfile(userId);
+	    noteManagementService.insertNoteByProject(projectId, notes, user,
 		    page.getId());
 	} catch (GenericException e) {
 	    response.setErrorMessage(NOTE_ADD_ERROR_MSG);

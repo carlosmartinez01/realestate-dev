@@ -34,8 +34,8 @@
 	<!-- Handles HTTP GET requests for /resources/** by efficiently serving 
 		up static resources in the ${webappRoot}/resources directory -->
 	<mvc:resources mapping="/resources/**" location="/resources/" />
-	<mvc:resources mapping="/user-files/**" location="file:/home/jorge/files/" />
-<!-- 	<mvc:resources mapping="/user-files/**" location="file:/maverik/srv/realestate/" /> -->
+<!-- 	<mvc:resources mapping="/user-files/**" location="file:/home/jorge/files/" /> -->
+	<mvc:resources mapping="/user-files/**" location="file:/maverik/srv/realestate/" />
 
 	<!-- Resolves views selected for rendering by @Controllers to .jsp resources 
 		in the /WEB-INF/views directory -->

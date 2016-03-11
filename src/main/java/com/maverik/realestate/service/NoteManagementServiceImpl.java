@@ -195,7 +195,6 @@ public class NoteManagementServiceImpl implements NoteManagementService {
 	if (propertyId == null || user == null) {
 	    return null;
 	}
-	NoteBean note = null;
 	PropertyNotes propertyNotes = null;
 	Page page = new Page();
 	page.setId(pageId);
@@ -214,9 +213,8 @@ public class NoteManagementServiceImpl implements NoteManagementService {
 	    LOGGER.info(ex.getMostSpecificCause().toString());
 	    throw exceptionHandler.getException(ex);
 	}
-	note = noteMapper.noteToNoteBean(entity);
 
-	return note;
+	return noteMapper.noteToNoteBean(entity);
     }
 
     /*
@@ -236,7 +234,6 @@ public class NoteManagementServiceImpl implements NoteManagementService {
 	if (projectId == null || user == null || pageId == null) {
 	    return null;
 	}
-	NoteBean note = null;
 	ProjectNotes projectNotes = null;
 	Page page = new Page();
 	page.setId(pageId);
@@ -255,9 +252,8 @@ public class NoteManagementServiceImpl implements NoteManagementService {
 	    LOGGER.info(ex.getMostSpecificCause().toString());
 	    throw exceptionHandler.getException(ex);
 	}
-	note = noteMapper.noteToNoteBean(entity);
 
-	return note;
+	return noteMapper.noteToNoteBean(entity);
     }
 
     /*

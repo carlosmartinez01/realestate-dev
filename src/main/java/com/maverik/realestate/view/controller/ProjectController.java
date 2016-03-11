@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.maverik.realestate.constants.RealEstateConstants.ObjectType;
 import com.maverik.realestate.constants.RealEstateConstants.RequestParams;
 import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.response.GenericResponse;
@@ -29,6 +30,7 @@ import com.maverik.realestate.service.UserManagementService;
 import com.maverik.realestate.view.bean.ActiveUser;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectManagementBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 
@@ -44,6 +46,10 @@ public class ProjectController {
 
     @Autowired
     private UserManagementService userManagementService;
+
+    private static final String PARAM_OBJECT_TYPE = "objectType";
+
+    private static final String PARAM_PROJECT_ID = "projectOID";
 
     @RequestMapping(method = RequestMethod.GET)
     public String getProjects(Model model,
@@ -135,7 +141,10 @@ public class ProjectController {
 	bean.setDrawings(projectManagementService.getArchitectDrawing(bean
 		.getId()));
 	model.addAttribute("preConstructionForm", bean);
-	model.addAttribute("projectId", projectId);
+	model.addAttribute(PARAM_PROJECT_ID, projectId);
+	model.addAttribute(PARAM_OBJECT_TYPE, ObjectType.PROJECT.toString());
+	model.addAttribute(RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
 
 	return "/secured/preConstruction";
     }
@@ -174,10 +183,11 @@ public class ProjectController {
 		.getId()));
 	model.addAttribute("preConstructionForm", bean);
 	model.addAttribute("messageForm", "Update Successfully");
-	// redirectAttributes.addAttribute("messageForm",
-	// "Update Successfully");
+	model.addAttribute(PARAM_PROJECT_ID, projectId);
+	model.addAttribute(PARAM_OBJECT_TYPE, ObjectType.PROJECT.toString());
+	model.addAttribute(RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
 
-	// return "redirect:/projects/" + projectId + "/preconstruction";
 	return "/secured/preConstruction";
     }
 
@@ -214,5 +224,24 @@ public class ProjectController {
 		preconstructionId);
 
 	return projectManagementService.getArchitectDrawing(preconstructionId);
+    }
+
+    @RequestMapping(value = "/{projectId}/management", method = RequestMethod.GET)
+    public String getProjectManagement(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @PathVariable Long projectId) throws GenericException {
+	LOGGER.info("Get project management for project id {}", projectId);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	ProjectManagementBean bean = projectManagementService
+		.getProjectManagement(projectId);
+	model.addAttribute("managementForm", bean);
+	model.addAttribute(PARAM_PROJECT_ID, projectId);
+	model.addAttribute(PARAM_OBJECT_TYPE, ObjectType.PROJECT.toString());
+	model.addAttribute(RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
+
+	return "/secured/management";
     }
 }

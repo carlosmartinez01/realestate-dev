@@ -101,12 +101,12 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public UserBean getUserProfileActive(String username, byte flag)
+    public UserBean getActiveUserProfile(String username)
 	    throws DBException {
 	LOGGER.info("Get User profile for Active one");
 	User user = null;
 	try {
-	    user = userRepository.findByUsernameAndActive(username, flag);
+	    user = userRepository.findByUsernameAndActive(username, Byte.valueOf(UserInfo.ACTIVE.toString()));
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
 	    LOGGER.info(ex.getMostSpecificCause().toString());

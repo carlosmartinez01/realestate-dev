@@ -11,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import java.util.Date;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,7 +37,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.maverik.realestate.domain.entity.Project;
+import com.maverik.realestate.domain.entity.ProjectManagement;
 import com.maverik.realestate.domain.entity.Property;
+import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyRepository;
 import com.maverik.realestate.service.ProjectManagementService;
 import com.maverik.realestate.test.MockSecurityContext;
@@ -68,6 +73,9 @@ public class ProjectControllerTest {
 
     @Autowired
     private PropertyRepository propertyRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
     private MockMvc mockMvc;
 
@@ -193,6 +201,40 @@ public class ProjectControllerTest {
 	Assert.assertEquals(
 		"{\"successMessage\":\"Project successfully added\",\"errorMessage\":null}",
 		result.getResponse().getContentAsString());
+    }
+
+    @Test
+    public void testGetProjectManagement() throws Exception {
+	ProjectBean projectBean = projectService
+		.findByProjectName("Default name");
+	setUpProjectManagement(projectBean);
+	MvcResult result = mockMvc
+		.perform(
+			get("/projects/" + projectBean.getId() + "/management")
+				.session(session)).andExpect(status().isOk())
+		.andReturn();
+	Assert.assertNotNull(result.getModelAndView().getModelMap()
+		.get("managementForm"));
+	Assert.assertEquals("/secured/management", result.getModelAndView()
+		.getViewName());
+    }
+
+    public void setUpProjectManagement(ProjectBean projectBean)
+	    throws Exception {
+	Project entity = new Project();
+	entity.setProjectName(projectBean.getProjectName());
+	entity.setId(projectBean.getId());
+	entity.setProjectPhase(projectBean.getProjectPhase());
+	entity.setStatus(projectBean.getStatus());
+	entity.setProperty(propertyRepository.findOne(projectBean.getProperty()
+		.getId()));
+	ProjectManagement management = new ProjectManagement();
+	management.setApprovedConstructionBudget("yes");
+	management.setBudgetDateSent(new Date());
+	management.setGeneralContractor("Contractor");
+	management.setProject(entity);
+	entity.setManagement(management);
+	projectRepository.save(entity);
     }
 
     @Test

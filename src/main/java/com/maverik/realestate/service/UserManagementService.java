@@ -10,7 +10,7 @@ public interface UserManagementService {
 
     public void resetPasswordForUser(String username) throws DBException;
 
-    public UserBean getUserProfileActive(String username, byte flag)
+    public UserBean getActiveUserProfile(String username)
 	    throws DBException;
 
     public UserBean updateUserProfile(UserBean user, String previousPassword)

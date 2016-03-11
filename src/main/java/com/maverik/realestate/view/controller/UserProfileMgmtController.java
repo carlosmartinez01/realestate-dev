@@ -89,9 +89,8 @@ public class UserProfileMgmtController {
 	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
 		activeUser.getUserFullName());
 	UserBean userProfile = null;
-	userProfile = userProfileService.getUserProfileActive(
-		activeUser.getUsername(),
-		Byte.valueOf(UserInfo.ACTIVE.toString()));
+	userProfile = userProfileService.getActiveUserProfile(
+		activeUser.getUsername());
 	model.addAttribute(VIEW_DETAILS_FORM, userProfile);
 	Map<String, Object> userDetails = new HashMap<String, Object>();
 	userDetails.put(RequestParams.PASSWORD.toString(),

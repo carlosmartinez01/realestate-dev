@@ -161,37 +161,6 @@ public class ProjectServiceTest {
 	Assert.assertEquals(project.getId(), p.getId());
     }
 
-    // @Test
-    // @Ignore
-    // public void testEInsertAndUpdatePreConstruction() throws Exception {
-    // Project p = new Project();
-    // p.setProjectName("Dummy PRE CONSTRUCTION");
-    // p.setStatus((byte) 1);
-    // p.setDescription("project description");
-    // ProjectPreConstruction pre = new ProjectPreConstruction();
-    // pre.setProject(p);
-    // pre.setConstructionDocumentType("City");
-    // pre.setContactName("Jorge");
-    // List<PreConstructionDetails> list = new
-    // ArrayList<PreConstructionDetails>();
-    // PreConstructionDetails details1 = new PreConstructionDetails();
-    // details1.setDateReceived(new Date());
-    // details1.setPreConstructionId(pre);
-    // PreConstructionDetails details2 = new PreConstructionDetails();
-    // details2.setDateReceived(new Date(1423006186L));
-    // details2.setPreConstructionId(pre);
-    // list.add(details1);
-    // list.add(details2);
-    // pre.setDetails(list);
-    // p.setPreConstruction(pre);
-    // projectRepository.save(p);
-    //
-    // // Project p = projectRepository.findOne(9L);
-    // // ProjectPreConstruction pre = p.getPreConstruction();
-    //
-    // // Assert.assertNotNull(p.getId());
-    // }
-
     @Test(expected = NoRecordFoundException.class)
     public void testZDeleteProject() throws GenericException {
 	projectService.deleteProject(project);

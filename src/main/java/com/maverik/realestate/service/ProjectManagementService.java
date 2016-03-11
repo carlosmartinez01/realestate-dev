@@ -6,6 +6,7 @@ import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectManagementBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 
@@ -55,5 +56,7 @@ public interface ProjectManagementService {
 
     public List<ArchitectDrawingBean> saveDrawingDetails(
 	    ProjectPreConstructionBean bean) throws GenericException;
+    
+    public ProjectManagementBean getProjectManagement(Long projectId) throws GenericException;
 
 }

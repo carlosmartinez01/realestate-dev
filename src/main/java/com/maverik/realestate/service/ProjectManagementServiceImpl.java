@@ -20,6 +20,7 @@ import com.maverik.realestate.domain.entity.Filename;
 import com.maverik.realestate.domain.entity.PreConstructionType;
 import com.maverik.realestate.domain.entity.PreConstructionTypeDetails;
 import com.maverik.realestate.domain.entity.Project;
+import com.maverik.realestate.domain.entity.ProjectManagement;
 import com.maverik.realestate.domain.entity.ProjectPreConstruction;
 import com.maverik.realestate.domain.entity.Property;
 import com.maverik.realestate.domain.entity.PropertyPermitting;
@@ -31,16 +32,19 @@ import com.maverik.realestate.handler.ExceptionHandler;
 import com.maverik.realestate.mapper.ArchitectDrawingMapper;
 import com.maverik.realestate.mapper.FileMapper;
 import com.maverik.realestate.mapper.PreConstructionMapper;
+import com.maverik.realestate.mapper.ProjectManagementMapper;
 import com.maverik.realestate.mapper.ProjectMapper;
 import com.maverik.realestate.repository.FilenameRepository;
 import com.maverik.realestate.repository.PreConstructionDetailRepository;
 import com.maverik.realestate.repository.PreConstructionRepository;
+import com.maverik.realestate.repository.ProjectManagementRepository;
 import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyRepository;
 import com.maverik.realestate.repository.UserRepository;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectManagementBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 import com.maverik.realestate.view.bean.PropertyContractViewBean;
@@ -59,6 +63,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 
     @Autowired
     private PropertyRepository propertyRepository;
+
     @Autowired
     private NoteManagementService noteManagementService;
 
@@ -88,6 +93,12 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 
     @Autowired
     private ArchitectDrawingMapper architectMapper;
+
+    @Autowired
+    private ProjectManagementRepository managementRepository;
+
+    @Autowired
+    private ProjectManagementMapper managementMapper;
 
     private static final Byte LAND_USE_PERMITTING_STATUS = 0;
 
@@ -580,6 +591,9 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
      * (com.maverik.realestate.view.bean.ArchitectDrawingBean)
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
     public List<ArchitectDrawingBean> saveDrawingDetails(
 	    ProjectPreConstructionBean bean) throws GenericException {
 	LOGGER.info("saveDrawingDetails({})", bean);
@@ -606,6 +620,32 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	    preconstructionRepository.save(preConstruction);
 	    return architectMapper.entitiesToBeans(preConstruction
 		    .getDrawings());
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#getProjectManagement
+     * (java.lang.Long)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ProjectManagementBean getProjectManagement(Long projectId)
+	    throws GenericException {
+	LOGGER.info("getProjectManagement({})", projectId);
+
+	try {
+	    Project project = new Project();
+	    project.setId(projectId);
+	    ProjectManagement management = managementRepository
+		    .findByProject(project);
+	    return managementMapper.entityToBean(management);
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
 	    LOGGER.info(ex.getMostSpecificCause().toString());

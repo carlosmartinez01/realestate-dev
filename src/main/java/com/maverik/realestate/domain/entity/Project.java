@@ -64,6 +64,9 @@ public class Project implements Serializable {
     @JoinColumn(name = "PROPERTYID", nullable = true)
     private Property property;
 
+    @OneToOne(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private ProjectManagement management;
+
     public Long getId() {
 	return id;
     }
@@ -155,6 +158,21 @@ public class Project implements Serializable {
 
     public void setPreConstruction(ProjectPreConstruction preConstruction) {
 	this.preConstruction = preConstruction;
+    }
+
+    /**
+     * @return the management
+     */
+    public ProjectManagement getManagement() {
+	return management;
+    }
+
+    /**
+     * @param management
+     *            the management to set
+     */
+    public void setManagement(ProjectManagement management) {
+	this.management = management;
     }
 
 }
