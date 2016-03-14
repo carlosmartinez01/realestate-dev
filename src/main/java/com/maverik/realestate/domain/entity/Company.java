@@ -64,6 +64,9 @@ public class Company implements Serializable {
     @Column(name = "ACTIVE", nullable = false)
     private Boolean active;
 
+    @Column(name = "type")
+    private String type;
+
     public Long getId() {
 	return id;
     }
@@ -158,5 +161,20 @@ public class Company implements Serializable {
 
     public void setProperties(Set<Property> properties) {
 	this.properties = properties;
+    }
+
+    /**
+     * @return the type
+     */
+    public String getType() {
+	return type;
+    }
+
+    /**
+     * @param type
+     *            the type to set
+     */
+    public void setType(String type) {
+	this.type = type;
     }
 }

@@ -76,11 +76,15 @@ $( function() {
 															var="deleteUrl" />
 														<spring:url value="/property/${property.id}/update"
 															var="updateUrl" />
+														<spring:url value="/property/${property.id}/addCompany"
+															var="addCompanyUrl" />
 														<button class="bttnNormal"
 															onclick="location.href='${updateUrl}'">Update</button>
 <!-- 														<button class="bttnCaution" -->
 <%-- 															onclick="location.href='${deleteUrl}'">Delete</button> --%>														
 														<button id="confirm${property.id}" value="${deleteUrl}" class="bttnCaution">Delete</button>
+														<button class="bttnSpecialAction"
+															onclick="location.href='${addCompanyUrl}'">&#43;Company</button>
 													</c:when>
 													<c:otherwise>
 			     										No Actions

@@ -11,6 +11,14 @@ function propertyMain() {
 window.location="<%=request.getContextPath()%>/property";
 }
 </script>
+<script>
+$( function() {
+	$("#update-property").on("click", function(e){;
+    	e.preventDefault();
+    	$('#propertyForm').attr('action', '<%=request.getContextPath()%>/property/updateProperty')[0].submit();
+	});
+});
+</script>
 <script type="text/javascript" note_url='<%=request.getContextPath()%>/note' obj_type='<%=request.getAttribute("objectType")%>' obj_id='<%=request.getAttribute("propertyOID")%>'
 src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
 </head>
@@ -27,10 +35,10 @@ src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
 							</c:if>
 							<div class="entry">
 								<br>
-								<spring:url value="/property/${requestScope.action}/addOrUpdate"
-									var="addOrUpdateProperty" />
-								<form:form method="POST" action="${addOrUpdateProperty}"
-									commandName="propertyView">
+								<spring:url value="/property/addProperty"
+									var="addProperty" />
+								<form:form method="POST" action="${addProperty}"
+									commandName="propertyView" id="propertyForm">
 									<div class="objListDetails">
 										<div class="tblRowDetails">
 											<div class="tblColDetails">Property Name</div>
@@ -72,12 +80,17 @@ src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
 										</div>
 									</div>
 									<br>
+									<c:if test="${action == 'Add'}">
+										<input class="bttnAction" type="submit" value="Add">
+									</c:if>
+									<c:if test="${action != 'Add'}">
+										<input class="bttnAction" type="button" id="update-property"
+											value="Update" />
+									</c:if>
 									<input class="bttnAction" type="button" value="&lt;&#45;Back"
 										onclick="javascript:propertyMain()" />
-									<input type="hidden" value="${requestScope.propertyOID}"
-										name="propertyId" />
-									<input class="bttnAction" type="submit"
-										value="${requestScope.action}">
+									<form:hidden path="id" />
+									<form:hidden path="status" />
 								</form:form>
 							</div>
 						</div>

@@ -11,6 +11,7 @@ import com.maverik.realestate.view.bean.PermittingAssignmentTaskBean;
 import com.maverik.realestate.view.bean.PermittingContactBean;
 import com.maverik.realestate.view.bean.PermittingMeetingsViewBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectRFIBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 import com.maverik.realestate.view.bean.PropertyContractViewBean;
 import com.maverik.realestate.view.bean.PropertyLOIBean;
@@ -103,7 +104,7 @@ public interface PropertyManagementService {
     public FileBean createLOIAndAddFile(FileBean fileBean, Long propertyId)
 	    throws GenericException;
 
-    public PropertyBean createContractAndUpdateProperty(PropertyBean property)
+    public PropertyBean createContract(PropertyBean property)
 	    throws GenericException;
 
     public FileBean addRECSOFile(FileBean fileBean, Long contractId)
@@ -174,4 +175,9 @@ public interface PropertyManagementService {
 
     public List<PropertyBean> findPropertiesByPermittingTasksPhase()
 	    throws GenericException;
+
+    public List<ProjectRFIBean> findRFIByProperty(Long propertyId)
+	    throws GenericException;
+
+    public ProjectRFIBean saveRFI(ProjectRFIBean bean) throws GenericException;
 }

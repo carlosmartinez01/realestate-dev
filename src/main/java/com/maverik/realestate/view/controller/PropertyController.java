@@ -23,8 +23,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.maverik.maverikannotations.sonar.SonarExclusionEnd;
-import com.maverik.maverikannotations.sonar.SonarExclusionStart;
 import com.maverik.realestate.constants.RealEstateConstants;
 import com.maverik.realestate.constants.RealEstateConstants.Actions;
 import com.maverik.realestate.constants.RealEstateConstants.ObjectType;
@@ -130,30 +128,71 @@ public class PropertyController {
 	return "/secured/viewPropertySummary";
     }
 
-    @SonarExclusionStart
-    @RequestMapping(value = "/addOrUpdateResearch/{action}/{projectStatus}", method = RequestMethod.POST)
-    public String editOrAddResearchPhase(Model model,
+    @RequestMapping(value = "/addResearch", method = RequestMethod.POST)
+    public String addProperty(Model model,
 	    @AuthenticationPrincipal ActiveUser activeUser,
 	    @ModelAttribute(VIEW_DETAILS_FORM) @Valid PropertyBean property,
-	    BindingResult result, @PathVariable String action,
-	    @RequestParam(required = true) Long propertyId,
-	    @RequestParam(required = false) Byte currentStatus,
-	    @PathVariable Byte projectStatus) throws GenericException {
-	LOGGER.info(
-		"{} property to be updated / property to be added with status {}",
-		propertyId, projectStatus);
+	    BindingResult result) throws GenericException {
+	LOGGER.info("The following property is going to be added {}", property);
 
 	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
 		activeUser.getUserFullName());
-	if (action == null) {
-	    throw new GenericException(
-		    "Unable to process the request - Please contact support team",
-		    "Unable to process the request", "N/A");
+	model.addAttribute(PARAM_OBJECT_TYPE, ObjectType.PROPERTY.toString());
+	model.addAttribute(
+		RealEstateConstants.RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
+	if (result.hasErrors()) {
+	    return VIEW_PROPERTY_RESEARCH_URL;
+	} else {
+	    property = propertyManagementService.insertProperty(property);
+	    model.addAttribute("messageForm", "New property added successful");
 	}
-	if (action.equalsIgnoreCase(Actions.UPDATE.toString())) {
-	    property.setId(propertyId);
-	    property.setStatus(currentStatus);
+	model.addAttribute(VIEW_DETAILS_FORM, property);
+	model.addAttribute(RequestParams.PROPERTY_ID.toString(),
+		property.getId());
+
+	return VIEW_PROPERTY_RESEARCH_URL;
+    }
+
+    @RequestMapping(value = "/updateResearch", method = RequestMethod.POST)
+    public String updateResearch(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @ModelAttribute(VIEW_DETAILS_FORM) @Valid PropertyBean property,
+	    BindingResult result) throws GenericException {
+	LOGGER.info("The following property is going to be updated {}",
+		property);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	model.addAttribute(PARAM_OBJECT_TYPE, ObjectType.PROPERTY.toString());
+	model.addAttribute(
+		RealEstateConstants.RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
+
+	if (result.hasErrors()) {
+	    return VIEW_PROPERTY_RESEARCH_URL;
+	} else {
+	    property = propertyManagementService.updateProperty(property);
+	    model.addAttribute("messageForm",
+		    "Update property has been successful");
 	}
+	model.addAttribute(VIEW_DETAILS_FORM, property);
+	model.addAttribute(RequestParams.PROPERTY_ID.toString(),
+		property.getId());
+
+	return VIEW_PROPERTY_RESEARCH_URL;
+    }
+
+    @RequestMapping(value = "/moveResearch", method = RequestMethod.POST)
+    public String moveToContract(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @ModelAttribute(VIEW_DETAILS_FORM) @Valid PropertyBean property,
+	    BindingResult result) throws GenericException {
+	LOGGER.info("Moving to Contract phase the following property {}",
+		property);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
 	model.addAttribute(VIEW_DETAILS_FORM, property);
 	model.addAttribute(RequestParams.PROPERTY_ID.toString(),
 		property.getId());
@@ -161,41 +200,23 @@ public class PropertyController {
 	model.addAttribute(
 		RealEstateConstants.RequestParams.USERNAME.toString(),
 		activeUser.getUsername());
-	String message = "";
 	if (result.hasErrors()) {
-	    if (!action.equalsIgnoreCase(Actions.UPDATE.toString())) {
-		model.addAttribute(RequestParams.ACTION.toString(),
-			Actions.ADD.toString());
-	    }
 	    return VIEW_PROPERTY_RESEARCH_URL;
 	} else {
-	    if (action.equalsIgnoreCase(Actions.ADD.toString())) {
-		property.setStatus(projectStatus);
-		model.addAttribute(RequestParams.ACTION.toString(),
-			Actions.ADD.toString());
-		propertyManagementService.insertProperty(property);
-		message = "New property added successful";
-	    } else if (action.equalsIgnoreCase(Actions.UPDATE.toString())) {
-		if (projectStatus > 0) {
-		    property.setStatus(projectStatus);
-		    propertyManagementService
-			    .createContractAndUpdateProperty(property);
-		}
-		// propertyManagementService.updateProperty(property);
-		message = "Update property has been successful";
-	    }
-	    model.addAttribute("messageForm", message);
+	    propertyManagementService.updateProperty(property);
+	    propertyManagementService.createContract(property);
+	    model.addAttribute("messageForm",
+		    "Moving to contract phase was successful");
 	}
 
 	return VIEW_PROPERTY_RESEARCH_URL;
     }
 
-    @SonarExclusionEnd
     @RequestMapping(value = "/add", method = RequestMethod.GET)
-    public String addProject(Model model,
+    public String requestAddProperty(Model model,
 	    @AuthenticationPrincipal ActiveUser activeUser)
 	    throws GenericException {
-	LOGGER.info("ProjectMgmtController - Add project");
+	LOGGER.info("Redirect to New property page");
 
 	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
 		activeUser.getUserFullName());

@@ -156,9 +156,8 @@ public class PropertyControllerTest {
 	p.setName("Dummy property");
 	p.setAddress("Address field");
 	mockMvc.perform(
-		post("/property/add/addOrUpdate").session(session)
-			.flashAttr("propertyView", p).param("propertyId", "1"))
-		.andExpect(status().isOk())
+		post("/property/addProperty").session(session).flashAttr(
+			"propertyView", p)).andExpect(status().isOk())
 		.andExpect(model().attributeExists("messageForm"))
 		.andExpect(view().name("/secured/viewPropertyDetails"));
     }
@@ -181,9 +180,8 @@ public class PropertyControllerTest {
 	p.setName("Dummy property");
 	p.setAddress("Updated Address field");
 	mockMvc.perform(
-		post("/property/update/addOrUpdate").session(session)
-			.flashAttr("propertyView", p)
-			.param("propertyId", p.getId() + ""))
+		post("/property/updateProperty").session(session).flashAttr(
+			"propertyView", p))
 		.andExpect(status().isOk())
 		.andExpect(
 			model().attribute("messageForm",
@@ -221,7 +219,7 @@ public class PropertyControllerTest {
 	c.setContractType("lease");
 	p.setContractType(c);
 	Assert.assertNotNull(p);
-	propertyService.createContractAndUpdateProperty(p);
+	propertyService.createContract(p);
 	PropertyContractViewBean propertyContract = new PropertyContractViewBean(
 		p, c);
 	mockMvc.perform(
@@ -236,11 +234,8 @@ public class PropertyControllerTest {
     public void testDUpdateProperty() throws Exception {
 	PropertyBean p = propertyService.findByPropertyName("Dummy property");
 	mockMvc.perform(
-		post("/properties/addOrUpdateResearch/update/1")
-			.session(session).flashAttr("propertyView", p)
-			.param("currentStatus", "" + 0)
-			.param("propertyId", "" + p.getId()))
-		.andExpect(status().isOk())
+		post("/properties/updateResearch").session(session).flashAttr(
+			"propertyView", p)).andExpect(status().isOk())
 		.andExpect(view().name("/secured/propertyResearch"));
     }
 

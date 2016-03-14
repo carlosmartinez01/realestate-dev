@@ -95,7 +95,7 @@ public class Property implements Serializable {
     @JoinTable(name = "property_user_xref", joinColumns = { @JoinColumn(name = "propertyId") }, inverseJoinColumns = { @JoinColumn(name = "userId") })
     private Set<User> users = new HashSet<User>();
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(name = "company_property_xref", joinColumns = { @JoinColumn(name = "propertyId") }, inverseJoinColumns = { @JoinColumn(name = "companyId") })
     private Set<Company> companies = new HashSet<Company>();
 
@@ -138,6 +138,10 @@ public class Property implements Serializable {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "pictureFilename_id")
     private Filename pictureFileName;
+
+    public void addCompany(Company company) {
+	companies.add(company);
+    }
 
     public String getName() {
 	return name;

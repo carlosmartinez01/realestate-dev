@@ -20,6 +20,7 @@ import com.maverik.realestate.domain.entity.Filename;
 import com.maverik.realestate.domain.entity.PreConstructionType;
 import com.maverik.realestate.domain.entity.PreConstructionTypeDetails;
 import com.maverik.realestate.domain.entity.Project;
+import com.maverik.realestate.domain.entity.ProjectCloseOut;
 import com.maverik.realestate.domain.entity.ProjectManagement;
 import com.maverik.realestate.domain.entity.ProjectPreConstruction;
 import com.maverik.realestate.domain.entity.Property;
@@ -32,11 +33,13 @@ import com.maverik.realestate.handler.ExceptionHandler;
 import com.maverik.realestate.mapper.ArchitectDrawingMapper;
 import com.maverik.realestate.mapper.FileMapper;
 import com.maverik.realestate.mapper.PreConstructionMapper;
+import com.maverik.realestate.mapper.ProjectCloseOutMapper;
 import com.maverik.realestate.mapper.ProjectManagementMapper;
 import com.maverik.realestate.mapper.ProjectMapper;
 import com.maverik.realestate.repository.FilenameRepository;
 import com.maverik.realestate.repository.PreConstructionDetailRepository;
 import com.maverik.realestate.repository.PreConstructionRepository;
+import com.maverik.realestate.repository.ProjectCloseOutRepository;
 import com.maverik.realestate.repository.ProjectManagementRepository;
 import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyRepository;
@@ -44,6 +47,7 @@ import com.maverik.realestate.repository.UserRepository;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectCloseOutBean;
 import com.maverik.realestate.view.bean.ProjectManagementBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
@@ -100,6 +104,12 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
     @Autowired
     private ProjectManagementMapper managementMapper;
 
+    @Autowired
+    private ProjectCloseOutRepository closeOutRepository;
+
+    @Autowired
+    private ProjectCloseOutMapper closeOutMapper;
+
     private static final Byte LAND_USE_PERMITTING_STATUS = 0;
 
     private static final Byte PRE_CONSTRUCTION_PERMITTING_STATUS = 1;
@@ -108,7 +118,11 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 
     private static final Byte CLOSE_OUT_STATUS = 3;
 
+    private static final Byte CLOSE_PROJECT = 4;
+
     private static final String NO_RECORD_FOUND_ID = "No record found related with id ";
+
+    private static final String GENERIC_ERROR_CODE = "-1";
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
@@ -188,7 +202,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	    Project entity = projectRepository.findOne(id);
 	    if (entity == null) {
 		throw new NoRecordFoundException("No project found",
-			"No project found for id " + id, "-1");
+			"No project found for id " + id, GENERIC_ERROR_CODE);
 	    }
 	    project = projectMapper.projectToProjectBean(entity);
 	} catch (DataAccessException ex) {
@@ -323,7 +337,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 				+ projectId
 				+ "], unable to continue and process the request",
 			"No Preconstruction record found, unable to process your request",
-			"-1");
+			GENERIC_ERROR_CODE);
 	    }
 	    return preConstructionMapper.entityToBean(preConstruction);
 	} catch (DataAccessException ex) {
@@ -504,7 +518,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 			"Unable to save file and preconstruction detail records, following data has been submitted => ["
 				+ preConstructionDetailId + "," + file + "]",
 			"No record found related with id "
-				+ preConstructionDetailId, "-1");
+				+ preConstructionDetailId, GENERIC_ERROR_CODE);
 	    }
 	    entity.setFilename(file);
 	    preConstructionDetailsRepository.save(entity);
@@ -544,7 +558,7 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 			"Unable to save file and preconstruction detail records, following data has been submitted => ["
 				+ preConstructionId + "," + file + "]",
 			"No record found related with id " + preConstructionId,
-			"-1");
+			GENERIC_ERROR_CODE);
 	    }
 	    entity.setPermitFilename(file);
 	    preconstructionRepository.save(entity);
@@ -604,7 +618,8 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	    if (preConstruction == null) {
 		throw new NoRecordFoundException(
 			"Unable to find preConstruction object, following data has been submitted => ["
-				+ bean.getId() + "]", NO_RECORD_FOUND_ID, "-1");
+				+ bean.getId() + "]", NO_RECORD_FOUND_ID,
+			GENERIC_ERROR_CODE);
 	    }
 	    List<ArchitectDrawing> drawings = architectMapper
 		    .beansToEntities(bean.getDrawings());
@@ -646,6 +661,175 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	    ProjectManagement management = managementRepository
 		    .findByProject(project);
 	    return managementMapper.entityToBean(management);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#saveManagement
+     * (com.maverik.realestate.view.bean.ProjectManagementBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public ProjectManagementBean saveManagement(ProjectManagementBean bean)
+	    throws GenericException {
+	LOGGER.info("saveManagement({})", bean);
+
+	try {
+	    Project project = projectRepository.findOne(bean.getProject());
+	    if (project == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Project object, following data has been submitted => ["
+				+ bean.getProject() + "]", NO_RECORD_FOUND_ID
+				+ " " + bean.getProject(), GENERIC_ERROR_CODE);
+	    }
+	    ProjectManagement management = managementMapper.beanToEntity(bean);
+	    management.setProject(project);
+	    management.setApprovedBudgetFile(project.getManagement()
+		    .getApprovedBudgetFile());
+	    project.setManagement(null);
+	    return managementMapper.entityToBean(managementRepository
+		    .save(management));
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#moveToCloseOut
+     * (com.maverik.realestate.view.bean.ProjectManagementBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public ProjectManagementBean moveToCloseOut(ProjectManagementBean bean)
+	    throws GenericException {
+	LOGGER.info("moveToCloseOut({})", bean);
+
+	try {
+	    Project project = projectRepository.findOne(bean.getProject());
+	    if (project == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Project object, following data has been submitted => ["
+				+ bean.getProject() + "]", NO_RECORD_FOUND_ID
+				+ " " + bean.getProject(), GENERIC_ERROR_CODE);
+	    }
+	    project.setStatus(CLOSE_OUT_STATUS);
+	    project = projectRepository.save(project);
+	    bean.setProject(project.getId());
+	    return bean;
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#getProjectCloseOut
+     * (java.lang.Long)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ProjectCloseOutBean getProjectCloseOut(Long projectId)
+	    throws GenericException {
+	LOGGER.info("getProjectCloseOut({})", projectId);
+
+	try {
+	    Project project = new Project();
+	    project.setId(projectId);
+	    ProjectCloseOut closeOut = closeOutRepository
+		    .findByProject(project);
+	    return closeOutMapper.entityToBean(closeOut);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#saveCloseOut(
+     * com.maverik.realestate.view.bean.ProjectCloseOutBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public ProjectCloseOutBean saveCloseOut(ProjectCloseOutBean bean)
+	    throws GenericException {
+	LOGGER.info("saveCloseOut({})", bean);
+
+	try {
+	    Project project = projectRepository.findOne(bean.getProject());
+	    if (project == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Project object, following data has been submitted => ["
+				+ bean.getProject() + "]", NO_RECORD_FOUND_ID
+				+ " " + bean.getProject(), GENERIC_ERROR_CODE);
+	    }
+	    ProjectCloseOut closeOut = closeOutMapper.beanToEntity(bean);
+	    closeOut.setProject(project);
+	    ProjectCloseOut entity = project.getCloseOut();
+	    closeOut.setRedlinesFile(entity.getRedlinesFile());
+	    closeOut.setGeneralContractorFile(entity.getGeneralContractorFile());
+	    closeOut.setPunchListItemsFile(entity.getPunchListItemsFile());
+	    project.setCloseOut(null);
+	    entity = null;
+	    return closeOutMapper.entityToBean(closeOutRepository
+		    .save(closeOut));
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#closeProject(
+     * com.maverik.realestate.view.bean.ProjectCloseOutBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public ProjectBean closeProject(Long projectId) throws GenericException {
+	LOGGER.info("closeProject({})", projectId);
+
+	try {
+	    Project project = projectRepository.findOne(projectId);
+	    if (project == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Project object, following data has been submitted => ["
+				+ projectId + "]", NO_RECORD_FOUND_ID + " "
+				+ projectId, GENERIC_ERROR_CODE);
+	    }
+	    project.setStatus(CLOSE_PROJECT);
+	    project = projectRepository.save(project);
+	    return projectMapper.projectToProjectBean(project);
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
 	    LOGGER.info(ex.getMostSpecificCause().toString());

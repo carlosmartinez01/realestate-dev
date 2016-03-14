@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.maverik.maverikannotations.sonar.SonarClassExclusion;
@@ -138,55 +137,47 @@ public class CompanyMgmtController {
 	return "/secured/userProfileMgmt";
     }
 
-    // @RequestParam(required=true) Boolean active
-    @RequestMapping(value = "/{action}/addOrUpdate", method = RequestMethod.POST)
-    public String editOrAddCompany(Model model,
+    @RequestMapping(value = "/addCompany", method = RequestMethod.POST)
+    public String addCompany(Model model,
 	    @AuthenticationPrincipal ActiveUser activeUser,
-	    @PathVariable String action,
-	    @RequestParam(required = true) Long companyId,
 	    @ModelAttribute(VIEW_DETAILS_FORM) @Valid CompanyBean company,
 	    BindingResult result) throws GenericException {
-	LOGGER.info(
-		"CompanyMgmtController - {} Company to be updated / Company to be added",
-		company);
+	LOGGER.info("Adding the following company {}", company);
 
 	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
 		activeUser.getUserFullName());
-	if (action == null) {
-	    throw new GenericException(
-		    "Unable to process the request - Please contact support team",
-		    "Unable to process the request", "N/A");
-	}
-	if (action.equalsIgnoreCase(Actions.UPDATE.toString())) {
-	    company.setId(companyId);
-	    model.addAttribute(RequestParams.ACTION.toString(),
-		    Actions.UPDATE.toString());
+	if (result.hasErrors()) {
+	    return VIEW_DETAILS_URL;
 	} else {
-	    model.addAttribute(RequestParams.ACTION.toString(),
-		    Actions.ADD.toString());
+	    company = companyManagementService.insertCompany(company);
+	    model.addAttribute("messageForm", "New Company added successful");
+	    model.addAttribute("companyOID", company.getId());
+	}
+	model.addAttribute(VIEW_DETAILS_FORM, company);
+	model.addAttribute("objectType", ObjectType.COMPANY.toString());
+
+	return VIEW_DETAILS_URL;
+    }
+
+    @RequestMapping(value = "/updateCompany", method = RequestMethod.POST)
+    public String updateCompany(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @ModelAttribute(VIEW_DETAILS_FORM) @Valid CompanyBean company,
+	    BindingResult result) throws GenericException {
+	LOGGER.info("Updating the following compnay {}", company);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	if (result.hasErrors()) {
+	    return VIEW_DETAILS_URL;
+	} else {
+	    company = companyManagementService.updateCompany(company);
+	    model.addAttribute("messageForm",
+		    "Update Company has been successful");
 	}
 	model.addAttribute(VIEW_DETAILS_FORM, company);
 	model.addAttribute("companyOID", company.getId());
 	model.addAttribute("objectType", ObjectType.COMPANY.toString());
-	String message = "";
-	if (result.hasErrors()) {
-	    if (!action.equalsIgnoreCase(Actions.UPDATE.toString())) {
-		model.addAttribute(RequestParams.ACTION.toString(),
-			Actions.ADD.toString());
-	    }
-	    return "/secured/viewCompanyDetails";
-	} else {
-	    if (action.equalsIgnoreCase(Actions.ADD.toString())) {
-		model.addAttribute(RequestParams.ACTION.toString(),
-			Actions.ADD.toString());
-		companyManagementService.insertCompany(company);
-		message = "New Company added successful";
-	    } else if (action.equalsIgnoreCase(Actions.UPDATE.toString())) {
-		message = "Update Company has been successful";
-		companyManagementService.updateCompany(company);
-	    }
-	    model.addAttribute("messageForm", message);
-	}
 
 	return VIEW_DETAILS_URL;
     }

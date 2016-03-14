@@ -105,7 +105,7 @@ public class FileManagerControllerTest {
 	PropertyContractBean contract = new PropertyContractBean();
 	contract.setPropertyId(property.getId());
 	property.setContractType(contract);
-	property = propertyService.createContractAndUpdateProperty(property);
+	property = propertyService.createContract(property);
 	LOGGER.info("Inserting permitting");
 	PropertyContractViewBean wrapper = new PropertyContractViewBean();
 	wrapper.setProperty(property);

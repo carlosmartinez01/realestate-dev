@@ -70,9 +70,21 @@ public class CompanyManagementServiceImpl implements CompanyManagementService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
     public CompanyBean updateCompany(CompanyBean company) throws DBException {
-	LOGGER.info("updateCompany()");
-	return insertCompany(company);
+	LOGGER.info("updateCompany({})", company);
+
+	try {
+	    Company entity = companyMapper.companyBeanToCompany(company);
+	    return companyMapper.companyToCompanyBean(companyRepository
+		    .save(entity));
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
     }
 
     @Override

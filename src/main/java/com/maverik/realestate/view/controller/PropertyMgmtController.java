@@ -1,9 +1,7 @@
 package com.maverik.realestate.view.controller;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.maverik.realestate.constants.RealEstateConstants.Actions;
@@ -37,7 +34,6 @@ import com.maverik.realestate.view.bean.PropertyBean;
 
 @Controller
 @RequestMapping(value = "/property")
-@SessionAttributes("propertiesSession")
 public class PropertyMgmtController {
 
     private static final Logger LOGGER = LoggerFactory
@@ -66,11 +62,12 @@ public class PropertyMgmtController {
 	List<PropertyBean> properties = propertyManagementService
 		.findAllProperties();
 	model.addAttribute("lstProperties", properties);
-	Map<String, PropertyBean> propertyDetails = new HashMap<String, PropertyBean>();
-	for (PropertyBean property : properties) {
-	    propertyDetails.put(property.getName(), property);
-	}
-	model.addAttribute("propertiesSession", propertyDetails);
+	// Map<String, PropertyBean> propertyDetails = new HashMap<String,
+	// PropertyBean>();
+	// for (PropertyBean property : properties) {
+	// propertyDetails.put(property.getName(), property);
+	// }
+	// model.addAttribute("propertiesSession", propertyDetails);
 	Collection<? extends GrantedAuthority> authorities = activeUser
 		.getAuthorities();
 	boolean authorized = authorities.contains(new SimpleGrantedAuthority(
@@ -154,6 +151,51 @@ public class PropertyMgmtController {
 	    }
 	    model.addAttribute("messageForm", message);
 	}
+
+	return VIEW_DETAILS_URL;
+    }
+
+    @RequestMapping(value = "/addProperty", method = RequestMethod.POST)
+    public String addProperty(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @ModelAttribute("propertyView") @Valid PropertyBean property,
+	    BindingResult result) throws GenericException {
+	LOGGER.info("Adding the following property {}", property);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	if (result.hasErrors()) {
+	    return VIEW_DETAILS_URL;
+	} else {
+	    property = propertyManagementService.insertProperty(property);
+	    model.addAttribute("messageForm", "New property added successful");
+	    model.addAttribute("propertyOID", property.getId());
+	}
+	model.addAttribute(VIEW_DETAILS_FORM, property);
+	model.addAttribute("objectType", ObjectType.PROPERTY.toString());
+
+	return VIEW_DETAILS_URL;
+    }
+
+    @RequestMapping(value = "/updateProperty", method = RequestMethod.POST)
+    public String updateProperty(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @ModelAttribute("propertyView") @Valid PropertyBean property,
+	    BindingResult result) throws GenericException {
+	LOGGER.info("Updating the following property {}", property);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	if (result.hasErrors()) {
+	    return "/secured/viewPropertyDetails";
+	} else {
+	    property = propertyManagementService.updateProperty(property);
+	    model.addAttribute("messageForm",
+		    "Update property has been successful");
+	}
+	model.addAttribute(VIEW_DETAILS_FORM, property);
+	model.addAttribute("propertyOID", property.getId());
+	model.addAttribute("objectType", ObjectType.PROPERTY.toString());
 
 	return VIEW_DETAILS_URL;
     }

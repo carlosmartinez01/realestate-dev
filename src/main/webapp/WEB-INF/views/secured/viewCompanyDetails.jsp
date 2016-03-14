@@ -11,8 +11,19 @@ function companyMain() {
 window.location="<%=request.getContextPath()%>/company";
 }
 </script>
-<script type="text/javascript" note_url='<%=request.getContextPath()%>/note' obj_type='<%=request.getAttribute("objectType")%>' obj_id='<%=request.getAttribute("companyOID")%>'
-src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
+<script>
+$( function() {
+	$("#update-company").on("click", function(e){;
+    	e.preventDefault();
+    	$('#companyForm').attr('action', '<%=request.getContextPath()%>/company/updateCompany')[0].submit();
+	});
+});
+</script>
+<script type="text/javascript"
+	note_url='<%=request.getContextPath()%>/note'
+	obj_type='<%=request.getAttribute("objectType")%>'
+	obj_id='<%=request.getAttribute("companyOID")%>'
+	src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
 </head>
 <body>
 	<div id="page">
@@ -24,28 +35,28 @@ src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
 							<c:choose>
 								<c:when test="${action == 'Add'}">
 									<h2 class="title">Add Company</h2>
-								</c:when>								
+								</c:when>
 								<c:when test="${action == 'Update'}">
 									<h2 class="title">Update Company</h2>
 								</c:when>
 								<c:otherwise>
-			     					<h2 class="title">Company Information</h2>
-			 					</c:otherwise>
+									<h2 class="title">Company Information</h2>
+								</c:otherwise>
 							</c:choose>
 							<c:if test="${not empty messageForm}">
 								<div class="msg">${messageForm}</div>
 							</c:if>
 							<div class="entry">
 								<br>
-								<spring:url value="/company/${requestScope.action}/addOrUpdate"
-									var="addOrUpdateCompany" />
-								<form:form method="POST" action="${addOrUpdateCompany}"
-									commandName="companyView">
+								<spring:url value="/company/addCompany" var="addCompany" />
+								<form:form method="POST" action="${addCompany}"
+									commandName="companyView" id="companyForm">
 									<div class="objListDetails">
 										<div class="tblRowDetails">
 											<div class="tblColDetails">Company Name</div>
 											<div class="tblColBoxDetails">
-												<form:input path="companyName" type="text" cssClass="genericBox" />
+												<form:input path="companyName" type="text"
+													cssClass="genericBox" />
 											</div>
 											<div class="tblColErrorDetails">
 												<form:errors path="companyName" cssClass="errorValMsg"
@@ -55,7 +66,7 @@ src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
 										<div class="tblRowDetails">
 											<div class="tblColDetails">Address</div>
 											<div class="tblColBoxDetails">
-												<form:textarea path="address" rows="2" cols="30"  />
+												<form:textarea path="address" rows="2" cols="30" />
 											</div>
 											<div class="tblColErrorDetails">
 												<form:errors path="address" cssClass="errorValMsg"
@@ -85,9 +96,9 @@ src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
 										<div class="tblRowDetails">
 											<div class="tblColDetails">State</div>
 											<div class="tblColBoxDetails">
-												<form:select path="state" >
-   												<form:option value="NONE" label="--- Select ---"/>
-   												<form:options items="${applicationScope.usStatesLst}" />
+												<form:select path="state">
+													<form:option value="NONE" label="--- Select ---" />
+													<form:options items="${applicationScope.usStatesLst}" />
 												</form:select>
 											</div>
 											<div class="tblColErrorDetails">
@@ -107,14 +118,17 @@ src="<%=request.getContextPath()%>/resources/js/notes.js"></script>
 										</div>
 									</div>
 									<br>
+									<c:if test="${action == 'Add'}">
+										<input class="bttnAction" type="submit" value="Add">
+									</c:if>
+									<c:if test="${action != 'Add'}">
+										<input class="bttnAction" type="button" id="update-company"
+											value="Update" />
+									</c:if>
 									<input class="bttnAction" type="button" value="&lt;&#45;Back"
-												onclick="javascript:companyMain()" />
-									<input type="hidden" value="${requestScope.companyOID}"
-										name="companyId" />
-										<input type="hidden" value="${requestScope.active}"
-										name="active" />
-									<input class="bttnAction" type="submit"
-										value="${requestScope.action}">
+										onclick="javascript:companyMain()" />
+									<form:hidden path="id" />
+									<form:hidden path="active" />
 								</form:form>
 							</div>
 						</div>

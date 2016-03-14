@@ -114,7 +114,7 @@ function getFormData(preconstructionId) {
 		arrayDrawingParent.push(drawingParent);
 	});
 	var parameters = {
-			"drawings": '', "dateReceived": $('#date-received').val(),
+			"drawings": '', "dateReceived": $('#date-received').val()
 	};
 	parameters.drawings = arrayDrawingParent;
 	

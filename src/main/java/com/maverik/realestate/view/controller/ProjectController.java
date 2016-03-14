@@ -20,16 +20,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.maverik.realestate.constants.RealEstateConstants.ObjectType;
 import com.maverik.realestate.constants.RealEstateConstants.RequestParams;
 import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.response.GenericResponse;
 import com.maverik.realestate.service.ProjectManagementService;
-import com.maverik.realestate.service.UserManagementService;
 import com.maverik.realestate.view.bean.ActiveUser;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectCloseOutBean;
 import com.maverik.realestate.view.bean.ProjectManagementBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
@@ -43,9 +44,6 @@ public class ProjectController {
 
     @Autowired
     private ProjectManagementService projectManagementService;
-
-    @Autowired
-    private UserManagementService userManagementService;
 
     private static final String PARAM_OBJECT_TYPE = "objectType";
 
@@ -149,7 +147,7 @@ public class ProjectController {
 	return "/secured/preConstruction";
     }
 
-    @RequestMapping(value = "/{projectId}/summary", method = RequestMethod.GET)
+    @RequestMapping(value = "/{projectId}/summary", method = RequestMethod.POST)
     public String getProjectSummary(Model model,
 	    @AuthenticationPrincipal ActiveUser activeUser,
 	    @PathVariable Long projectId, HttpSession session)
@@ -210,6 +208,7 @@ public class ProjectController {
 	    projectManagementService.saveDrawingDetails(bean);
 	    response.setSuccessMessage("Architect Drawings was save successfully");
 	} catch (GenericException e) {
+	    LOGGER.info("" + e);
 	    response.setErrorMessage("Unable to save Architect Drawings");
 	}
 
@@ -226,7 +225,7 @@ public class ProjectController {
 	return projectManagementService.getArchitectDrawing(preconstructionId);
     }
 
-    @RequestMapping(value = "/{projectId}/management", method = RequestMethod.GET)
+    @RequestMapping(value = "/{projectId}/management", method = RequestMethod.POST)
     public String getProjectManagement(Model model,
 	    @AuthenticationPrincipal ActiveUser activeUser,
 	    @PathVariable Long projectId) throws GenericException {
@@ -243,5 +242,118 @@ public class ProjectController {
 		activeUser.getUsername());
 
 	return "/secured/management";
+    }
+
+    @RequestMapping(value = "/{managementId}/management/save", method = RequestMethod.POST)
+    public String saveProjectManagement(
+	    Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @PathVariable Long managementId,
+	    @ModelAttribute("managementForm") @Valid ProjectManagementBean bean,
+	    BindingResult result) throws GenericException {
+	LOGGER.info("Save project management id {}", managementId);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	bean.setId(managementId);
+	bean = projectManagementService.saveManagement(bean);
+	model.addAttribute("messageForm",
+		"Update Project Management Successfully");
+	model.addAttribute("managementForm", bean);
+	model.addAttribute(PARAM_PROJECT_ID, bean.getProject());
+	model.addAttribute(PARAM_OBJECT_TYPE, ObjectType.PROJECT.toString());
+	model.addAttribute(RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
+
+	return "/secured/management";
+    }
+
+    @RequestMapping(value = "/{managementId}/management/move", method = RequestMethod.POST)
+    public String moveProjectManagement(
+	    Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @PathVariable Long managementId,
+	    @ModelAttribute("managementForm") @Valid ProjectManagementBean bean,
+	    BindingResult result, final RedirectAttributes redirectAttributes)
+	    throws GenericException {
+	LOGGER.info("Move project management id {}", managementId);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	bean.setId(managementId);
+	projectManagementService.moveToCloseOut(bean);
+	redirectAttributes.addFlashAttribute("messageForm",
+		"Moving to Project Close Out");
+	redirectAttributes.addFlashAttribute(PARAM_PROJECT_ID,
+		bean.getProject());
+	redirectAttributes.addFlashAttribute(PARAM_OBJECT_TYPE,
+		ObjectType.PROJECT.toString());
+	redirectAttributes.addFlashAttribute(RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
+
+	return "redirect:/properties/" + bean.getProject() + "/close-out";
+    }
+
+    @RequestMapping(value = "/{projectId}/close-out", method = RequestMethod.POST)
+    public String getProjectCloseOut(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @PathVariable Long projectId) throws GenericException {
+	LOGGER.info("Get project close-out for project id {}", projectId);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	ProjectCloseOutBean bean = projectManagementService
+		.getProjectCloseOut(projectId);
+	model.addAttribute("closeOutForm", bean);
+	model.addAttribute(PARAM_PROJECT_ID, projectId);
+	model.addAttribute(PARAM_OBJECT_TYPE, ObjectType.PROJECT.toString());
+	model.addAttribute(RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
+
+	return "/secured/close-out";
+    }
+
+    @RequestMapping(value = "/{closeOutId}/close-out/save", method = RequestMethod.POST)
+    public String saveProjectCloseOut(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @PathVariable Long closeOutId,
+	    @ModelAttribute("closeOutForm") @Valid ProjectCloseOutBean bean,
+	    BindingResult result) throws GenericException {
+	LOGGER.info("Save project close out id {}", closeOutId);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	bean.setId(closeOutId);
+	bean = projectManagementService.saveCloseOut(bean);
+	model.addAttribute("messageForm",
+		"Update Project Close Out was Successfully");
+	model.addAttribute("closeOutForm", bean);
+	model.addAttribute(PARAM_PROJECT_ID, bean.getProject());
+	model.addAttribute(PARAM_OBJECT_TYPE, ObjectType.PROJECT.toString());
+	model.addAttribute(RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
+
+	return "/secured/close-out";
+    }
+
+    @RequestMapping(value = "/{projectId}/close-project", method = RequestMethod.POST)
+    public String closeProject(Model model,
+	    @AuthenticationPrincipal ActiveUser activeUser,
+	    @PathVariable Long projectId,
+	    @ModelAttribute("closeOutForm") @Valid ProjectCloseOutBean bean,
+	    BindingResult result) throws GenericException {
+	LOGGER.info("Closing project {}", projectId);
+
+	model.addAttribute(RequestParams.USER_FULLNAME.toString(),
+		activeUser.getUserFullName());
+	projectManagementService.closeProject(projectId);
+	model.addAttribute("messageForm", "Closing project was successful");
+	model.addAttribute("closeOutForm", bean);
+	model.addAttribute(PARAM_PROJECT_ID, projectId);
+	model.addAttribute(PARAM_OBJECT_TYPE, ObjectType.PROJECT.toString());
+	model.addAttribute(RequestParams.USERNAME.toString(),
+		activeUser.getUsername());
+
+	return "/secured/close-out";
     }
 }

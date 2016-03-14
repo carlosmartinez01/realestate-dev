@@ -103,21 +103,9 @@ public class CompanyControllerTest {
 	c.setCity("SLC");
 	c.setState("UT");
 	mockMvc.perform(
-		post("/company/add/addOrUpdate").session(session)
-			.flashAttr("companyView", c).param("companyId", "1"))
-		.andExpect(status().isOk())
+		post("/company/addCompany").session(session).flashAttr(
+			"companyView", c)).andExpect(status().isOk())
 		.andExpect(model().attributeExists("messageForm"))
-		.andExpect(view().name("/secured/viewCompanyDetails"));
-    }
-
-    @Test
-    public void testCUpdateCompanyBefore() throws Exception {
-	CompanyBean c = companyService.findByCompanyName("Dummy company");
-	Assert.assertNotNull(c);
-	mockMvc.perform(
-		get("/company/" + c.getId() + "/update").session(session))
-		.andExpect(status().isOk())
-		.andExpect(model().attribute("companyOID", c.getId()))
 		.andExpect(view().name("/secured/viewCompanyDetails"));
     }
 
@@ -130,9 +118,8 @@ public class CompanyControllerTest {
 	c.setCity("Houston");
 	c.setState("UT");
 	mockMvc.perform(
-		post("/company/update/addOrUpdate").session(session)
-			.flashAttr("companyView", c)
-			.param("companyId", c.getId() + ""))
+		post("/company/updateCompany").session(session).flashAttr(
+			"companyView", c))
 		.andExpect(status().isOk())
 		.andExpect(
 			model().attribute("messageForm",

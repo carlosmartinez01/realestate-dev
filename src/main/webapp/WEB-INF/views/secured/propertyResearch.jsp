@@ -76,7 +76,15 @@ $(document).ready(function() {
 $( function() {
 	$("#moveToContract").on("click", function(e){;
     	e.preventDefault();
-    	$('#researchForm').attr('action', '<%=request.getContextPath()%>/properties/addOrUpdateResearch/update/1')[0].submit();
+    	$('#researchForm').attr('action', '<%=request.getContextPath()%>/properties/moveResearch')[0].submit();
+	});
+});
+</script>
+<script>
+$( function() {
+	$("#add-property").on("click", function(e){;
+    	e.preventDefault();
+    	$('#researchForm').attr('action', '<%=request.getContextPath()%>/properties/addResearch')[0].submit();
 	});
 });
 </script>
@@ -113,9 +121,9 @@ $( function() {
 									<div class="entry">
 										<br>
 										<spring:url
-											value="/properties/addOrUpdateResearch/${requestScope.action}/0/"
-											var="addOrUpdateProperty" />
-										<form:form method="POST" action="${addOrUpdateProperty}"
+											value="/properties/updateResearch"
+											var="updatePropertyUrl" />
+										<form:form method="POST" action="${updatePropertyUrl}"
 											modelAttribute="propertyView" id="researchForm">
 											<div class="objListDetails">
 												<div class="tblRowDetails">
@@ -190,17 +198,19 @@ $( function() {
 													</div>
 												</div>
 											</div>
-											<br>											
-											<input type="hidden" value="${requestScope.propertyOID}"
-												name="propertyId" />
-											<input type="hidden" value="${propertyView.status}"
-												name="currentStatus" />
-											<input class="bttnAction" type="submit"
-												value="${requestScope.action}">
-											<c:if test="${action != 'Add'}">
-											<input class="bttnAction" type="button" id="moveToContract"
-												value="Move property to contract" />
+											<br>
+											<c:if test="${action == 'Add'}">
+												<input class="bttnAction" type="button" id="add-property"
+												value="Add">
 											</c:if>
+											<c:if test="${action != 'Add'}">
+											<input class="bttnAction" type="submit"
+												value="Update">
+											<input class="bttnAction" type="button" id="moveToContract"
+												value="Move property to contract" />											
+											</c:if>
+											<form:hidden path="status"/>
+											<form:hidden path="id"/>
 										</form:form>
 									</div>
 								</div>
@@ -225,7 +235,6 @@ $( function() {
 
 		<div id="sidebar">
 			<div id="menubox"></div>
-<%-- 			<jsp:include page="${request.contextPath}/projects/menuNavigation"></jsp:include> --%>
 		</div>
 
 	</div>

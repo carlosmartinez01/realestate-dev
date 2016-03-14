@@ -39,6 +39,8 @@ public class CompanyBean implements Serializable {
 
     private Boolean active;
 
+    private String type;
+
     public Long getId() {
 	return id;
     }
@@ -130,5 +132,20 @@ public class CompanyBean implements Serializable {
     @Override
     public String toString() {
 	return "CompanyBean [id=" + id + ", companyName=" + companyName + "]";
+    }
+
+    /**
+     * @return the type
+     */
+    public String getType() {
+	return type;
+    }
+
+    /**
+     * @param type
+     *            the type to set
+     */
+    public void setType(String type) {
+	this.type = type;
     }
 }

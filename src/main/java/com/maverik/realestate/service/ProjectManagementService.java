@@ -6,6 +6,7 @@ import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectCloseOutBean;
 import com.maverik.realestate.view.bean.ProjectManagementBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
 import com.maverik.realestate.view.bean.PropertyBean;
@@ -56,7 +57,21 @@ public interface ProjectManagementService {
 
     public List<ArchitectDrawingBean> saveDrawingDetails(
 	    ProjectPreConstructionBean bean) throws GenericException;
-    
-    public ProjectManagementBean getProjectManagement(Long projectId) throws GenericException;
 
+    public ProjectManagementBean getProjectManagement(Long projectId)
+	    throws GenericException;
+
+    public ProjectManagementBean saveManagement(ProjectManagementBean bean)
+	    throws GenericException;
+
+    public ProjectManagementBean moveToCloseOut(ProjectManagementBean bean)
+	    throws GenericException;
+
+    public ProjectCloseOutBean getProjectCloseOut(Long projectId)
+	    throws GenericException;
+
+    public ProjectCloseOutBean saveCloseOut(ProjectCloseOutBean bean)
+	    throws GenericException;
+
+    public ProjectBean closeProject(Long projectId) throws GenericException;
 }

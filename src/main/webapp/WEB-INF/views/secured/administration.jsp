@@ -29,7 +29,6 @@ $(document).ready(function(){
 								<div class="divAdminButton"><a href="<%=request.getContextPath()%>/property" class="propertyAdminBtn" id="propertyButton">Property Administration</a></div>
 								<div class="divAdminButton"><a href="<%=request.getContextPath()%>/role" class="roleAdminBtn" id="roleButton">Role Administration</a></div>
 								<div class="divAdminButton"><a href="<%=request.getContextPath()%>/company" class="companyAdminBtn" id="CompanyButton">Company Administration</a></div>
-								<div class="divAdminButton"><a href="<%=request.getContextPath()%>/project" class="projectAdminBtn" id="projectButton">Project Administration</a></div>
 								<div class="divAdminButton"><a href="<%=request.getContextPath()%>/profile/all" class="usersAdminBtn" id="usersButton">Users Administration</a></div>								
 							</div>
 							<div style="clear: both;">&nbsp;</div>

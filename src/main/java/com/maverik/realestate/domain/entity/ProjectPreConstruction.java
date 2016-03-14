@@ -26,6 +26,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.maverik.maverikannotations.sonar.SonarClassExclusion;
 
 /**
@@ -35,6 +38,7 @@ import com.maverik.maverikannotations.sonar.SonarClassExclusion;
 @SonarClassExclusion
 @Entity
 @Table(name = "project_preconstruction")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "property")
 public class ProjectPreConstruction implements Serializable {
 
     /**

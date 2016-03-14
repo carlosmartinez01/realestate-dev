@@ -67,6 +67,15 @@ public class Project implements Serializable {
     @OneToOne(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private ProjectManagement management;
 
+    @OneToOne(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private ProjectCloseOut closeOut;
+
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<ProjectRFI> projectRFIs = new HashSet<ProjectRFI>();
+
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<ProjectASI> projectASIs = new HashSet<ProjectASI>();
+
     public Long getId() {
 	return id;
     }
@@ -173,6 +182,51 @@ public class Project implements Serializable {
      */
     public void setManagement(ProjectManagement management) {
 	this.management = management;
+    }
+
+    /**
+     * @return the closeOut
+     */
+    public ProjectCloseOut getCloseOut() {
+	return closeOut;
+    }
+
+    /**
+     * @param closeOut
+     *            the closeOut to set
+     */
+    public void setCloseOut(ProjectCloseOut closeOut) {
+	this.closeOut = closeOut;
+    }
+
+    /**
+     * @return the projectRFIs
+     */
+    public Set<ProjectRFI> getProjectRFIs() {
+	return projectRFIs;
+    }
+
+    /**
+     * @param projectRFIs
+     *            the projectRFIs to set
+     */
+    public void setProjectRFIs(Set<ProjectRFI> projectRFIs) {
+	this.projectRFIs = projectRFIs;
+    }
+
+    /**
+     * @return the projectASIs
+     */
+    public Set<ProjectASI> getProjectASIs() {
+	return projectASIs;
+    }
+
+    /**
+     * @param projectASIs
+     *            the projectASIs to set
+     */
+    public void setProjectASIs(Set<ProjectASI> projectASIs) {
+	this.projectASIs = projectASIs;
     }
 
 }

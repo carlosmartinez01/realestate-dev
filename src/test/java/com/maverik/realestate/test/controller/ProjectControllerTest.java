@@ -38,6 +38,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.maverik.realestate.domain.entity.Project;
+import com.maverik.realestate.domain.entity.ProjectCloseOut;
 import com.maverik.realestate.domain.entity.ProjectManagement;
 import com.maverik.realestate.domain.entity.Property;
 import com.maverik.realestate.repository.ProjectRepository;
@@ -46,6 +47,8 @@ import com.maverik.realestate.service.ProjectManagementService;
 import com.maverik.realestate.test.MockSecurityContext;
 import com.maverik.realestate.view.bean.ActiveUser;
 import com.maverik.realestate.view.bean.ProjectBean;
+import com.maverik.realestate.view.bean.ProjectCloseOutBean;
+import com.maverik.realestate.view.bean.ProjectManagementBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 
 /**
@@ -78,6 +81,10 @@ public class ProjectControllerTest {
     private ProjectRepository projectRepository;
 
     private MockMvc mockMvc;
+
+    private static ProjectManagement managementEntity;
+
+    private static ProjectCloseOut closeOutEntity;
 
     private static MockHttpSession session;
 
@@ -204,19 +211,127 @@ public class ProjectControllerTest {
     }
 
     @Test
-    public void testGetProjectManagement() throws Exception {
+    public void testFGetProjectManagement() throws Exception {
 	ProjectBean projectBean = projectService
 		.findByProjectName("Default name");
 	setUpProjectManagement(projectBean);
 	MvcResult result = mockMvc
 		.perform(
-			get("/projects/" + projectBean.getId() + "/management")
+			post("/projects/" + projectBean.getId() + "/management")
 				.session(session)).andExpect(status().isOk())
 		.andReturn();
 	Assert.assertNotNull(result.getModelAndView().getModelMap()
 		.get("managementForm"));
 	Assert.assertEquals("/secured/management", result.getModelAndView()
 		.getViewName());
+    }
+
+    @Test
+    public void testHSaveProjectManagement() throws Exception {
+	ProjectBean projectBean = projectService
+		.findByProjectName("Default name");
+	ProjectManagementBean bean = projectService
+		.getProjectManagement(projectBean.getId());
+	bean.setGeneralContractor("Modified Contactor");
+	bean.setApprovedConstructionBudget("No");
+	mockMvc.perform(
+		post("/projects/" + bean.getId() + "/management/save").session(
+			session).flashAttr("managementForm", bean))
+		.andExpect(status().isOk())
+		.andExpect(view().name("/secured/management"))
+		.andExpect(
+			model().attribute("messageForm",
+				"Update Project Management Successfully"));
+    }
+
+    @Test
+    public void testIMoveProjectCloseOut() throws Exception {
+	ProjectBean projectBean = projectService
+		.findByProjectName("Default name");
+	setUpProjectCloseOut(projectBean);
+	ProjectManagementBean bean = projectService
+		.getProjectManagement(projectBean.getId());
+	mockMvc.perform(
+		post(
+			"/projects/" + managementEntity.getId()
+				+ "/management/move").session(session)
+			.flashAttr("managementForm", bean))
+		.andExpect(
+			flash().attribute("messageForm",
+				"Moving to Project Close Out"))
+		.andExpect(
+			redirectedUrl("/properties/" + projectBean.getId()
+				+ "/close-out"));
+    }
+
+    @Test
+    public void testJHetProjectCloseOut() throws Exception {
+	ProjectBean projectBean = projectService
+		.findByProjectName("Default name");
+	ProjectCloseOutBean closeOut = new ProjectCloseOutBean();
+	closeOut.setId(closeOutEntity.getId());
+	closeOut.setGeneralContractorWarranties("yes");
+	closeOut.setPunchListComplete("Yes");
+	closeOut.setRedlines("yes");
+	closeOut.setPunchListComplete("Yes");
+	closeOut.setProject(projectBean.getId());
+	mockMvc.perform(
+		post("/projects/" + projectBean.getId() + "/close-out")
+			.session(session))
+		.andExpect(model().attribute("closeOutForm", closeOut))
+		.andExpect(view().name("/secured/close-out"));
+    }
+
+    @Test
+    public void testKSaveProjectCloseOut() throws Exception {
+	ProjectBean projectBean = projectService
+		.findByProjectName("Default name");
+	ProjectCloseOutBean bean = projectService
+		.getProjectCloseOut(projectBean.getId());
+	bean.setGeneralContractorWarranties("NO");
+	mockMvc.perform(
+		post("/projects/" + bean.getId() + "/close-out/save").session(
+			session).flashAttr("closeOutForm", bean))
+		.andExpect(status().isOk())
+		.andExpect(view().name("/secured/close-out"))
+		.andExpect(
+			model().attribute("messageForm",
+				"Update Project Close Out was Successfully"));
+    }
+
+    @Test
+    public void testLCloseProject() throws Exception {
+	ProjectBean projectBean = projectService
+		.findByProjectName("Default name");
+	ProjectCloseOutBean bean = projectService
+		.getProjectCloseOut(projectBean.getId());
+	mockMvc.perform(
+		post("/projects/" + projectBean.getId() + "/close-project")
+			.session(session).flashAttr("closeOutForm", bean))
+		.andExpect(status().isOk())
+		.andExpect(view().name("/secured/close-out"))
+		.andExpect(
+			model().attribute("messageForm",
+				"Closing project was successful"));
+    }
+
+    public void setUpProjectCloseOut(ProjectBean projectBean) throws Exception {
+	Project entity = new Project();
+	entity.setProjectName(projectBean.getProjectName());
+	entity.setId(projectBean.getId());
+	entity.setProjectPhase(projectBean.getProjectPhase());
+	entity.setStatus(projectBean.getStatus());
+	entity.setProperty(propertyRepository.findOne(projectBean.getProperty()
+		.getId()));
+	ProjectCloseOut closeOut = new ProjectCloseOut();
+	closeOut.setGeneralContractorWarranties("yes");
+	closeOut.setPunchListComplete("Yes");
+	closeOut.setRedlines("yes");
+	closeOut.setPunchListComplete("Yes");
+	closeOut.setProject(entity);
+	entity.setCloseOut(closeOut);
+	entity = projectRepository.save(entity);
+	closeOutEntity = entity.getCloseOut();
     }
 
     public void setUpProjectManagement(ProjectBean projectBean)
@@ -234,7 +349,8 @@ public class ProjectControllerTest {
 	management.setGeneralContractor("Contractor");
 	management.setProject(entity);
 	entity.setManagement(management);
-	projectRepository.save(entity);
+	entity = projectRepository.save(entity);
+	managementEntity = entity.getManagement();
     }
 
     @Test
