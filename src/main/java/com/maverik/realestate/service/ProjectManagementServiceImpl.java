@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.maverik.realestate.constants.RealEstateConstants.ConstructionDocumentTypes;
 import com.maverik.realestate.constants.RealEstateConstants.ProjectPhases;
 import com.maverik.realestate.domain.entity.ArchitectDrawing;
+import com.maverik.realestate.domain.entity.DailyReport;
 import com.maverik.realestate.domain.entity.Filename;
 import com.maverik.realestate.domain.entity.PreConstructionType;
 import com.maverik.realestate.domain.entity.PreConstructionTypeDetails;
@@ -33,6 +34,7 @@ import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.exception.NoRecordFoundException;
 import com.maverik.realestate.handler.ExceptionHandler;
 import com.maverik.realestate.mapper.ArchitectDrawingMapper;
+import com.maverik.realestate.mapper.DailyReportMapper;
 import com.maverik.realestate.mapper.FileMapper;
 import com.maverik.realestate.mapper.PreConstructionMapper;
 import com.maverik.realestate.mapper.ProjectASIMapper;
@@ -40,6 +42,7 @@ import com.maverik.realestate.mapper.ProjectCloseOutMapper;
 import com.maverik.realestate.mapper.ProjectManagementMapper;
 import com.maverik.realestate.mapper.ProjectMapper;
 import com.maverik.realestate.mapper.ProjectRFIMapper;
+import com.maverik.realestate.repository.DailyReportRepository;
 import com.maverik.realestate.repository.FilenameRepository;
 import com.maverik.realestate.repository.PreConstructionDetailRepository;
 import com.maverik.realestate.repository.PreConstructionRepository;
@@ -51,6 +54,7 @@ import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyRepository;
 import com.maverik.realestate.repository.UserRepository;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
+import com.maverik.realestate.view.bean.DailyReportBean;
 import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectASIBean;
 import com.maverik.realestate.view.bean.ProjectBean;
@@ -129,6 +133,12 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 
     @Autowired
     private ProjectASIRepository asiRepository;
+
+    @Autowired
+    private DailyReportMapper dailyReportMapper;
+
+    @Autowired
+    private DailyReportRepository dailyReportRepository;
 
     private static final Byte LAND_USE_PERMITTING_STATUS = 0;
 
@@ -1241,5 +1251,39 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	}
 
 	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.PropertyManagementService#saveDailyReport
+     * (com.maverik.realestate.view.bean.DailyReportBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public DailyReportBean saveDailyReport(DailyReportBean bean)
+	    throws GenericException {
+	LOGGER.info("saveDailyReport({})", bean);
+
+	try {
+	    DailyReport dailyReport = dailyReportMapper.beanToEntity(bean);
+	    Project project = projectRepository.findOne(bean.getProject());
+	    if (project == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Project object, following data has been submitted => ["
+				+ bean.getProject() + "]", NO_RECORD_FOUND_ID
+				+ " " + bean.getProject(), GENERIC_ERROR_CODE);
+	    }
+	    dailyReport.setProject(project);
+	    return dailyReportMapper.entityToBean(dailyReportRepository
+		    .save(dailyReport));
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
     }
 }

@@ -174,4 +174,5 @@ public interface PropertyManagementService {
 
     public List<PropertyBean> findPropertiesByPermittingTasksPhase()
 	    throws GenericException;
+
 }

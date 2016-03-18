@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
+import com.maverik.realestate.view.bean.DailyReportBean;
 import com.maverik.realestate.view.bean.FileBean;
 import com.maverik.realestate.view.bean.ProjectASIBean;
 import com.maverik.realestate.view.bean.ProjectBean;
@@ -104,5 +105,8 @@ public interface ProjectManagementService {
 
     public FileBean addPunchListItemsFile(FileBean fileBean, Long closeOutId,
 	    Long projectId) throws GenericException;
+
+    public DailyReportBean saveDailyReport(DailyReportBean bean)
+	    throws GenericException;
 
 }
