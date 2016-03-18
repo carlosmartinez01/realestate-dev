@@ -265,7 +265,7 @@ public class ProjectControllerTest {
     }
 
     @Test
-    public void testJHetProjectCloseOut() throws Exception {
+    public void testJGetProjectCloseOut() throws Exception {
 	ProjectBean projectBean = projectService
 		.findByProjectName("Default name");
 	ProjectCloseOutBean closeOut = new ProjectCloseOutBean();

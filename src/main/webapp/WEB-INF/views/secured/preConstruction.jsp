@@ -97,6 +97,7 @@ $(function() {
 	$('#success-msg').hide();
 	$('#error-msg').hide();
 	$('#server-msg').hide();
+	$('#generic-server-msg').hide();
 	$('#general-msg').delay(2100).fadeToggle(800, 'linear');
 });
 </script>
@@ -121,6 +122,7 @@ $(function() {
 								<div class="bg3">
 								<div id="success-msg" class="msg"></div>
 								<div id="error-msg" class="error"></div>
+								<div id="generic-server-msg" class="error"></div>
 								<div id="server-msg" class="error"></div>
 								<c:if test="${not empty messageForm}">
 										<div id=general-msg class="msg">${messageForm}</div>

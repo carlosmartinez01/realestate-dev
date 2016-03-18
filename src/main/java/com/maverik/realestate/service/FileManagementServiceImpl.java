@@ -47,6 +47,18 @@ public class FileManagementServiceImpl implements FileManagementService {
     @Value("${preconstruction.permit.file}")
     private String preConstructionPermit;
 
+    @Value("${project.rfi.file}")
+    private String projectRFI;
+
+    @Value("${project.asi.file}")
+    private String projectASI;
+
+    @Value("${project.management.file}")
+    private String projectManagement;
+
+    @Value("${project.closeout.file}")
+    private String projectCloseOut;
+
     @Value("${webapp.dir}")
     private String webappDir;
 
@@ -185,6 +197,77 @@ public class FileManagementServiceImpl implements FileManagementService {
 
 	FileBean bean = uploadFile(file, preConstructionPermit,
 		"/project/preconstruction/permit/");
+	bean.setAbsolutePath(bean.getAbsolutePath());
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.FileManagementService#uploadRFIFile(org
+     * .springframework.web.multipart.MultipartFile)
+     */
+    @Override
+    public FileBean uploadRFIFile(MultipartFile file) throws IOException {
+	LOGGER.info("uploadRFIFile({})", file);
+
+	FileBean bean = uploadFile(file, projectRFI, "/project/rfi/");
+	bean.setAbsolutePath(bean.getAbsolutePath());
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.FileManagementService#uploadASIFile(org
+     * .springframework.web.multipart.MultipartFile)
+     */
+    @Override
+    public FileBean uploadASIFile(MultipartFile file) throws IOException {
+	LOGGER.info("uploadASIFile({})", file);
+
+	FileBean bean = uploadFile(file, projectASI, "/project/asi/");
+	bean.setAbsolutePath(bean.getAbsolutePath());
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.maverik.realestate.service.FileManagementService#
+     * uploadManagementBudgetFile
+     * (org.springframework.web.multipart.MultipartFile)
+     */
+    @Override
+    public FileBean uploadManagementBudgetFile(MultipartFile file)
+	    throws IOException {
+	LOGGER.info("uploadManagementBudgetFile({})", file);
+
+	FileBean bean = uploadFile(file, projectManagement,
+		"/project/management/");
+	bean.setAbsolutePath(bean.getAbsolutePath());
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.FileManagementService#uploadCloseOutFile
+     * (org.springframework.web.multipart.MultipartFile)
+     */
+    @Override
+    public FileBean uploadCloseOutFile(MultipartFile file) throws IOException {
+	LOGGER.info("uploadCloseOutFile({})", file);
+
+	FileBean bean = uploadFile(file, projectManagement,
+		"/project/close-out/");
 	bean.setAbsolutePath(bean.getAbsolutePath());
 
 	return bean;

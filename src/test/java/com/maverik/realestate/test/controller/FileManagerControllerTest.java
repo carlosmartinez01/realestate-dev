@@ -112,6 +112,7 @@ public class FileManagerControllerTest {
 	wrapper.setPropertyContract(contract);
 	property = propertyService
 		.createLandPermittingAndUpdateProperty(wrapper);
+
 	Assert.assertNotNull(property);
     }
 

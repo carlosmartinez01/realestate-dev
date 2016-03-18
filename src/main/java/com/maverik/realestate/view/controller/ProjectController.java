@@ -147,7 +147,7 @@ public class ProjectController {
 	return "/secured/preConstruction";
     }
 
-    @RequestMapping(value = "/{projectId}/summary", method = RequestMethod.POST)
+    @RequestMapping(value = "/{projectId}/summary", method = RequestMethod.GET)
     public String getProjectSummary(Model model,
 	    @AuthenticationPrincipal ActiveUser activeUser,
 	    @PathVariable Long projectId, HttpSession session)

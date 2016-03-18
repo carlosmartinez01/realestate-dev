@@ -1,7 +1,9 @@
 package com.maverik.realestate.domain.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -71,10 +73,18 @@ public class Project implements Serializable {
     private ProjectCloseOut closeOut;
 
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<ProjectRFI> projectRFIs = new HashSet<ProjectRFI>();
+    private List<ProjectRFI> projectRFIs = new ArrayList<ProjectRFI>();
 
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<ProjectASI> projectASIs = new HashSet<ProjectASI>();
+    private List<ProjectASI> projectASIs = new ArrayList<ProjectASI>();
+
+    public void addProjectRFI(ProjectRFI rfi) {
+	projectRFIs.add(rfi);
+    }
+
+    public void addProjectASI(ProjectASI asi) {
+	projectASIs.add(asi);
+    }
 
     public Long getId() {
 	return id;
@@ -202,7 +212,7 @@ public class Project implements Serializable {
     /**
      * @return the projectRFIs
      */
-    public Set<ProjectRFI> getProjectRFIs() {
+    public List<ProjectRFI> getProjectRFIs() {
 	return projectRFIs;
     }
 
@@ -210,14 +220,14 @@ public class Project implements Serializable {
      * @param projectRFIs
      *            the projectRFIs to set
      */
-    public void setProjectRFIs(Set<ProjectRFI> projectRFIs) {
+    public void setProjectRFIs(List<ProjectRFI> projectRFIs) {
 	this.projectRFIs = projectRFIs;
     }
 
     /**
      * @return the projectASIs
      */
-    public Set<ProjectASI> getProjectASIs() {
+    public List<ProjectASI> getProjectASIs() {
 	return projectASIs;
     }
 
@@ -225,7 +235,7 @@ public class Project implements Serializable {
      * @param projectASIs
      *            the projectASIs to set
      */
-    public void setProjectASIs(Set<ProjectASI> projectASIs) {
+    public void setProjectASIs(List<ProjectASI> projectASIs) {
 	this.projectASIs = projectASIs;
     }
 

@@ -35,6 +35,8 @@
 		<jpa:class>com.maverik.realestate.domain.entity.ProjectCloseOut</jpa:class>
 		<jpa:class>com.maverik.realestate.domain.entity.ProjectRFI</jpa:class>
 		<jpa:class>com.maverik.realestate.domain.entity.ProjectASI</jpa:class>
+		<jpa:class>com.maverik.realestate.domain.entity.DailyReport</jpa:class>
+		<jpa:class>com.maverik.realestate.domain.entity.DailyReportDetails</jpa:class>
 		<jpa:provider>org.hibernate.ejb.HibernatePersistence</jpa:provider>
 		<jpa:properties>
 			<jpa:property name="hibernate.dialect"

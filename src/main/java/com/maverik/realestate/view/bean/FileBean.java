@@ -27,6 +27,10 @@ public class FileBean extends AbstractResponse implements Serializable {
 
     private String absolutePath;
 
+    private String creationTime;
+
+    private Long entityRelatedId;
+
     public Long getId() {
 	return id;
     }
@@ -70,6 +74,36 @@ public class FileBean extends AbstractResponse implements Serializable {
 
     public void setAbsolutePath(String absolutePath) {
 	this.absolutePath = absolutePath;
+    }
+
+    /**
+     * @return the creationTime
+     */
+    public String getCreationTime() {
+	return creationTime;
+    }
+
+    /**
+     * @param creationTime
+     *            the creationTime to set
+     */
+    public void setCreationTime(String creationTime) {
+	this.creationTime = creationTime;
+    }
+
+    /**
+     * @return the entityRelatedId
+     */
+    public Long getEntityRelatedId() {
+	return entityRelatedId;
+    }
+
+    /**
+     * @param entityRelatedId
+     *            the entityRelatedId to set
+     */
+    public void setEntityRelatedId(Long entityRelatedId) {
+	this.entityRelatedId = entityRelatedId;
     }
 
 }

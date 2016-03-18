@@ -1,3 +1,4 @@
 target/
 files/property/**
+files/project/**
 maverik/log/**

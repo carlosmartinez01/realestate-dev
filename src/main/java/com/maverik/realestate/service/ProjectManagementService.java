@@ -5,10 +5,12 @@ import java.util.List;
 import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
 import com.maverik.realestate.view.bean.FileBean;
+import com.maverik.realestate.view.bean.ProjectASIBean;
 import com.maverik.realestate.view.bean.ProjectBean;
 import com.maverik.realestate.view.bean.ProjectCloseOutBean;
 import com.maverik.realestate.view.bean.ProjectManagementBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
+import com.maverik.realestate.view.bean.ProjectRFIBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 
 public interface ProjectManagementService {
@@ -38,9 +40,6 @@ public interface ProjectManagementService {
 	    throws GenericException;
 
     public List<ArchitectDrawingBean> getArchitectDrawing(Long preConstructionId)
-	    throws GenericException;
-
-    public List<ProjectBean> getProjectsByProperty(Long propertyId)
 	    throws GenericException;
 
     public void createNextProjectPhases(PropertyBean property,
@@ -74,4 +73,36 @@ public interface ProjectManagementService {
 	    throws GenericException;
 
     public ProjectBean closeProject(Long projectId) throws GenericException;
+
+    public List<ProjectRFIBean> findRFIByProperty(Long propertyId)
+	    throws GenericException;
+
+    public ProjectRFIBean saveRFI(ProjectRFIBean bean) throws GenericException;
+
+    public List<ProjectBean> getProjectsByProperty(Long propertyId)
+	    throws GenericException;
+
+    public List<ProjectASIBean> findASIByProperty(Long propertyId)
+	    throws GenericException;
+
+    public ProjectASIBean saveASI(ProjectASIBean bean) throws GenericException;
+
+    public FileBean addRFIFile(FileBean fileBean, Long rfiId, Long projectId)
+	    throws GenericException;
+
+    public FileBean addASIFile(FileBean fileBean, Long asiId, Long projectId)
+	    throws GenericException;
+
+    public FileBean addConstructionBudgetFile(FileBean fileBean,
+	    Long managementId, Long projectId) throws GenericException;
+
+    public FileBean addRedlinesFile(FileBean fileBean, Long closeOutId,
+	    Long projectId) throws GenericException;
+
+    public FileBean addGeneralContractorFile(FileBean fileBean,
+	    Long closeOutId, Long projectId) throws GenericException;
+
+    public FileBean addPunchListItemsFile(FileBean fileBean, Long closeOutId,
+	    Long projectId) throws GenericException;
+
 }

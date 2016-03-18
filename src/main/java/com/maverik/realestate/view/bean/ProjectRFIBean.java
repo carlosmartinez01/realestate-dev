@@ -4,6 +4,7 @@
 package com.maverik.realestate.view.bean;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -34,6 +35,8 @@ public class ProjectRFIBean implements Serializable {
     private String suggestion;
 
     private FileBean rfiFile;
+
+    private List<String> people;
 
     private String creationTime;
 
@@ -215,6 +218,21 @@ public class ProjectRFIBean implements Serializable {
      */
     public void setCreationTime(String creationTime) {
 	this.creationTime = creationTime;
+    }
+
+    /**
+     * @return the people
+     */
+    public List<String> getPeople() {
+	return people;
+    }
+
+    /**
+     * @param people
+     *            the people to set
+     */
+    public void setPeople(List<String> people) {
+	this.people = people;
     }
 
 }
