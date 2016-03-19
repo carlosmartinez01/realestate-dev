@@ -34,4 +34,12 @@ public interface FileManagementService {
     public FileBean uploadPreConstructionPermitFile(MultipartFile file)
 	    throws IOException;
 
+    public FileBean uploadRFIFile(MultipartFile file) throws IOException;
+
+    public FileBean uploadASIFile(MultipartFile file) throws IOException;
+
+    public FileBean uploadManagementBudgetFile(MultipartFile file)
+	    throws IOException;
+
+    public FileBean uploadCloseOutFile(MultipartFile file) throws IOException;
 }

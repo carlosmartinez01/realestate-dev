@@ -74,11 +74,18 @@ function uploadFile(url, fileItem, out, fileId, id) {
 	        	});
 				$('#error-msg').delay(2100).fadeToggle(800, 'linear');
 			}
-		}, error: function(data) {
-			$('#server-msg').fadeToggle('slow', 'linear', function() {
-				$('#server-msg').html('Error while processing the request, please try again later!');
+		}, statusCode: {
+			400: function() {
+				$('#server-msg').fadeToggle('slow', 'linear', function() {
+					$('#server-msg').html('File size exceeds the maximum allowed!');
+	        	});
+				$('#server-msg').delay(2100).fadeToggle(800, 'linear');	
+			}
+		}, error: function() {
+			$('#generic-server-msg').fadeToggle('slow', 'linear', function() {
+				$('#generic-server-msg').html('Error while processing the request, please try again later!');
         	});
-			$('#server-msg').delay(2100).fadeToggle(800, 'linear');			
+			$('#generic-server-msg').delay(2100).fadeToggle(800, 'linear');			
 		}
 	});
 }

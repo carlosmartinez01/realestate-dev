@@ -16,13 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.maverik.realestate.constants.RealEstateConstants.ConstructionDocumentTypes;
 import com.maverik.realestate.constants.RealEstateConstants.ProjectPhases;
 import com.maverik.realestate.domain.entity.ArchitectDrawing;
+import com.maverik.realestate.domain.entity.DailyReport;
 import com.maverik.realestate.domain.entity.Filename;
 import com.maverik.realestate.domain.entity.PreConstructionType;
 import com.maverik.realestate.domain.entity.PreConstructionTypeDetails;
 import com.maverik.realestate.domain.entity.Project;
+import com.maverik.realestate.domain.entity.ProjectASI;
 import com.maverik.realestate.domain.entity.ProjectCloseOut;
 import com.maverik.realestate.domain.entity.ProjectManagement;
 import com.maverik.realestate.domain.entity.ProjectPreConstruction;
+import com.maverik.realestate.domain.entity.ProjectRFI;
 import com.maverik.realestate.domain.entity.Property;
 import com.maverik.realestate.domain.entity.PropertyPermitting;
 import com.maverik.realestate.domain.entity.User;
@@ -31,25 +34,34 @@ import com.maverik.realestate.exception.GenericException;
 import com.maverik.realestate.exception.NoRecordFoundException;
 import com.maverik.realestate.handler.ExceptionHandler;
 import com.maverik.realestate.mapper.ArchitectDrawingMapper;
+import com.maverik.realestate.mapper.DailyReportMapper;
 import com.maverik.realestate.mapper.FileMapper;
 import com.maverik.realestate.mapper.PreConstructionMapper;
+import com.maverik.realestate.mapper.ProjectASIMapper;
 import com.maverik.realestate.mapper.ProjectCloseOutMapper;
 import com.maverik.realestate.mapper.ProjectManagementMapper;
 import com.maverik.realestate.mapper.ProjectMapper;
+import com.maverik.realestate.mapper.ProjectRFIMapper;
+import com.maverik.realestate.repository.DailyReportRepository;
 import com.maverik.realestate.repository.FilenameRepository;
 import com.maverik.realestate.repository.PreConstructionDetailRepository;
 import com.maverik.realestate.repository.PreConstructionRepository;
+import com.maverik.realestate.repository.ProjectASIRepository;
 import com.maverik.realestate.repository.ProjectCloseOutRepository;
 import com.maverik.realestate.repository.ProjectManagementRepository;
+import com.maverik.realestate.repository.ProjectRFIRepository;
 import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyRepository;
 import com.maverik.realestate.repository.UserRepository;
 import com.maverik.realestate.view.bean.ArchitectDrawingBean;
+import com.maverik.realestate.view.bean.DailyReportBean;
 import com.maverik.realestate.view.bean.FileBean;
+import com.maverik.realestate.view.bean.ProjectASIBean;
 import com.maverik.realestate.view.bean.ProjectBean;
 import com.maverik.realestate.view.bean.ProjectCloseOutBean;
 import com.maverik.realestate.view.bean.ProjectManagementBean;
 import com.maverik.realestate.view.bean.ProjectPreConstructionBean;
+import com.maverik.realestate.view.bean.ProjectRFIBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 import com.maverik.realestate.view.bean.PropertyContractViewBean;
 
@@ -109,6 +121,24 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 
     @Autowired
     private ProjectCloseOutMapper closeOutMapper;
+
+    @Autowired
+    private ProjectRFIRepository rfiRepository;
+
+    @Autowired
+    private ProjectRFIMapper rfiMapper;
+
+    @Autowired
+    private ProjectASIMapper asiMapper;
+
+    @Autowired
+    private ProjectASIRepository asiRepository;
+
+    @Autowired
+    private DailyReportMapper dailyReportMapper;
+
+    @Autowired
+    private DailyReportRepository dailyReportRepository;
 
     private static final Byte LAND_USE_PERMITTING_STATUS = 0;
 
@@ -340,34 +370,6 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 			GENERIC_ERROR_CODE);
 	    }
 	    return preConstructionMapper.entityToBean(preConstruction);
-	} catch (DataAccessException ex) {
-	    LOGGER.debug(ex.getMessage());
-	    LOGGER.info(ex.getMostSpecificCause().toString());
-	    throw exceptionHandler.getException(ex);
-	}
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.maverik.realestate.service.ProjectManagementService#getProjectsByProperty
-     * (java.lang.Long)
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectBean> getProjectsByProperty(Long propertyId)
-	    throws GenericException {
-	LOGGER.info("getProjectsByProperty({})", propertyId);
-
-	try {
-	    Property property = propertyRepository.findOne(propertyId);
-	    List<ProjectBean> projects = new ArrayList<ProjectBean>();
-	    property.getProjects().forEach(
-		    project -> projects.add(new ProjectBean(project.getId(),
-			    project.getProjectName(), null, null, project
-				    .getProjectPhase(), null, null)));
-	    return projects;
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
 	    LOGGER.info(ex.getMostSpecificCause().toString());
@@ -830,6 +832,454 @@ public class ProjectManagementServiceImpl implements ProjectManagementService {
 	    project.setStatus(CLOSE_PROJECT);
 	    project = projectRepository.save(project);
 	    return projectMapper.projectToProjectBean(project);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.PropertyManagementService#findRFIByProperty
+     * (java.lang.Long)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProjectRFIBean> findRFIByProperty(Long propertyId)
+	    throws GenericException {
+	LOGGER.info("findRFIByProperty({})", propertyId);
+
+	try {
+	    Property property = propertyRepository.findOne(propertyId);
+	    if (property == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Property object, following data has been submitted => ["
+				+ propertyId + "]", NO_RECORD_FOUND_ID + " "
+				+ propertyId, GENERIC_ERROR_CODE);
+	    }
+	    List<ProjectRFIBean> rfis = new ArrayList<ProjectRFIBean>();
+	    property.getProjects().forEach(
+		    project -> project.getProjectRFIs().forEach(
+			    rfi -> rfis.add(rfiMapper.entityToBean(rfi))));
+	    List<String> names = new ArrayList<String>();
+	    property.getCompanies().forEach(
+		    company -> company.getUsers().forEach(
+			    user -> names.add(user.getFirstName() + " "
+				    + user.getLastName())));
+	    rfis.forEach(rfi -> rfi.setPeople(names));
+	    return rfis;
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.PropertyManagementService#saveRFI(com.
+     * maverik.realestate.view.bean.ProjectRFIBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public ProjectRFIBean saveRFI(ProjectRFIBean bean) throws GenericException {
+	LOGGER.info("saveRFI({})", bean);
+
+	try {
+	    Project project = projectRepository.findOne(bean.getProject());
+	    if (project == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Property object, following data has been submitted => ["
+				+ bean.getProject() + "]", NO_RECORD_FOUND_ID
+				+ " " + bean.getProject(), GENERIC_ERROR_CODE);
+	    }
+	    ProjectRFI rfi = rfiMapper.beanToEntity(bean);
+	    rfi.setProject(project);
+	    FileBean rfiFile = bean.getRfiFile();
+	    if (rfiFile != null) {
+		Filename file = fileRepository.findOne(rfiFile.getId());
+		rfi.setRfiFile(file);
+	    }
+	    return rfiMapper.entityToBean(rfiRepository.save(rfi));
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.maverik.realestate.service.PropertyManagementService#
+     * getProjectsByProperty(com.maverik.realestate.view.bean.PropertyBean)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProjectBean> getProjectsByProperty(Long propertyId)
+	    throws GenericException {
+	LOGGER.info("getProjectsByProperty({})", propertyId);
+
+	try {
+	    Property property = propertyRepository.findOne(propertyId);
+	    if (property == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Property object, following data has been submitted => ["
+				+ propertyId + "]", NO_RECORD_FOUND_ID + " "
+				+ propertyId, GENERIC_ERROR_CODE);
+	    }
+	    List<ProjectBean> projects = new ArrayList<ProjectBean>();
+	    property.getProjects().forEach(
+		    project -> projects.add(projectMapper
+			    .projectToProjectBean(project)));
+	    return projects;
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.PropertyManagementService#findASIByProperty
+     * (java.lang.Long)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProjectASIBean> findASIByProperty(Long propertyId)
+	    throws GenericException {
+	LOGGER.info("findASIByProperty({})", propertyId);
+
+	try {
+	    Property property = propertyRepository.findOne(propertyId);
+	    if (property == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Property object, following data has been submitted => ["
+				+ propertyId + "]", NO_RECORD_FOUND_ID + " "
+				+ propertyId, GENERIC_ERROR_CODE);
+	    }
+	    List<ProjectASIBean> asis = new ArrayList<ProjectASIBean>();
+	    property.getProjects().forEach(
+		    project -> project.getProjectASIs().forEach(
+			    asi -> asis.add(asiMapper.entityToBean(asi))));
+	    List<String> names = new ArrayList<String>();
+	    property.getCompanies().forEach(
+		    company -> company.getUsers().forEach(
+			    user -> names.add(user.getFirstName() + " "
+				    + user.getLastName())));
+	    asis.forEach(asi -> asi.setPeople(names));
+	    return asis;
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.PropertyManagementService#saveASI(com.
+     * maverik.realestate.view.bean.ProjectASIBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public ProjectASIBean saveASI(ProjectASIBean bean) throws GenericException {
+	LOGGER.info("saveASI({})", bean);
+
+	try {
+	    Project project = projectRepository.findOne(bean.getProject());
+	    if (project == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Property object, following data has been submitted => ["
+				+ bean.getProject() + "]", NO_RECORD_FOUND_ID
+				+ " " + bean.getProject(), GENERIC_ERROR_CODE);
+	    }
+	    ProjectASI asi = asiMapper.beanToEntity(bean);
+	    asi.setProject(project);
+	    FileBean asiFile = bean.getAsiFile();
+	    if (asiFile != null) {
+		Filename file = fileRepository.findOne(asiFile.getId());
+		asi.setAsiFile(file);
+	    }
+	    return asiMapper.entityToBean(asiRepository.save(asi));
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.PropertyManagementService#addRFIFile(com
+     * .maverik.realestate.view.bean.FileBean, java.lang.Long)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public FileBean addRFIFile(FileBean fileBean, Long rfiId, Long projectId)
+	    throws GenericException {
+	LOGGER.info("addRFIFile({},{})", fileBean, rfiId);
+
+	Filename file = null;
+	FileBean bean = null;
+	try {
+	    file = fileMapper.fileBeanToFile(fileBean);
+	    file = fileRepository.save(file);
+	    ProjectRFI rfi = null;
+	    if (rfiId != null) {
+		rfi = rfiRepository.findOne(rfiId);
+	    } else {
+		rfi = new ProjectRFI();
+		rfi.setProject(projectRepository.findOne(projectId));
+	    }
+	    rfi.setRfiFile(file);
+	    rfiRepository.save(rfi);
+	    bean = fileMapper.fileToFileBean(file);
+	    bean.setEntityRelatedId(rfiId);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.PropertyManagementService#addASIFile(com
+     * .maverik.realestate.view.bean.FileBean, java.lang.Long)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public FileBean addASIFile(FileBean fileBean, Long asiId, Long projectId)
+	    throws GenericException {
+	LOGGER.info("addASIFile({},{})", fileBean, asiId);
+
+	Filename file = null;
+	FileBean bean = null;
+	try {
+	    file = fileMapper.fileBeanToFile(fileBean);
+	    file = fileRepository.save(file);
+	    ProjectASI asi = null;
+	    if (asiId != null) {
+		asi = asiRepository.findOne(asiId);
+	    } else {
+		asi = new ProjectASI();
+		asi.setProject(projectRepository.findOne(projectId));
+	    }
+	    asi.setAsiFile(file);
+	    asiRepository.save(asi);
+	    bean = fileMapper.fileToFileBean(file);
+	    bean.setEntityRelatedId(asiId);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.maverik.realestate.service.ProjectManagementService#
+     * addConstructionBudgetFile(com.maverik.realestate.view.bean.FileBean,
+     * java.lang.Long, java.lang.Long)
+     */
+    @Override
+    public FileBean addConstructionBudgetFile(FileBean fileBean,
+	    Long managementId, Long projectId) throws GenericException {
+	LOGGER.info("addConstructionBudgetFile({},{})", fileBean, managementId);
+
+	Filename file = null;
+	FileBean bean = null;
+	try {
+	    file = fileMapper.fileBeanToFile(fileBean);
+	    file = fileRepository.save(file);
+	    ProjectManagement management = null;
+	    if (managementId != null) {
+		management = managementRepository.findOne(managementId);
+	    } else {
+		management = new ProjectManagement();
+		management.setProject(projectRepository.findOne(projectId));
+	    }
+	    management.setApprovedBudgetFile(file);
+	    managementRepository.save(management);
+	    bean = fileMapper.fileToFileBean(file);
+	    bean.setEntityRelatedId(managementId);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#addRedlinesFile
+     * (com.maverik.realestate.view.bean.FileBean, java.lang.Long,
+     * java.lang.Long)
+     */
+    @Override
+    public FileBean addRedlinesFile(FileBean fileBean, Long closeOutId,
+	    Long projectId) throws GenericException {
+	LOGGER.info("addRedlinesFile({},{})", fileBean, closeOutId);
+
+	Filename file = null;
+	FileBean bean = null;
+	try {
+	    file = fileMapper.fileBeanToFile(fileBean);
+	    file = fileRepository.save(file);
+	    ProjectCloseOut closeOut = null;
+	    if (closeOutId != null) {
+		closeOut = closeOutRepository.findOne(closeOutId);
+	    } else {
+		closeOut = new ProjectCloseOut();
+		closeOut.setProject(projectRepository.findOne(projectId));
+	    }
+	    closeOut.setRedlinesFile(file);
+	    closeOutRepository.save(closeOut);
+	    bean = fileMapper.fileToFileBean(file);
+	    bean.setEntityRelatedId(closeOutId);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.maverik.realestate.service.ProjectManagementService#
+     * addGeneralContractorFile(com.maverik.realestate.view.bean.FileBean,
+     * java.lang.Long, java.lang.Long)
+     */
+    @Override
+    public FileBean addGeneralContractorFile(FileBean fileBean,
+	    Long closeOutId, Long projectId) throws GenericException {
+	LOGGER.info("addGeneralContractorFile({},{})", fileBean, closeOutId);
+
+	Filename file = null;
+	FileBean bean = null;
+	try {
+	    file = fileMapper.fileBeanToFile(fileBean);
+	    file = fileRepository.save(file);
+	    ProjectCloseOut closeOut = null;
+	    if (closeOutId != null) {
+		closeOut = closeOutRepository.findOne(closeOutId);
+	    } else {
+		closeOut = new ProjectCloseOut();
+		closeOut.setProject(projectRepository.findOne(projectId));
+	    }
+	    closeOut.setGeneralContractorFile(file);
+	    closeOutRepository.save(closeOut);
+	    bean = fileMapper.fileToFileBean(file);
+	    bean.setEntityRelatedId(closeOutId);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.ProjectManagementService#addPunchListItemsFile
+     * (com.maverik.realestate.view.bean.FileBean, java.lang.Long,
+     * java.lang.Long)
+     */
+    @Override
+    public FileBean addPunchListItemsFile(FileBean fileBean, Long closeOutId,
+	    Long projectId) throws GenericException {
+	LOGGER.info("addPunchListItemsFile({},{})", fileBean, closeOutId);
+
+	Filename file = null;
+	FileBean bean = null;
+	try {
+	    file = fileMapper.fileBeanToFile(fileBean);
+	    file = fileRepository.save(file);
+	    ProjectCloseOut closeOut = null;
+	    if (closeOutId != null) {
+		closeOut = closeOutRepository.findOne(closeOutId);
+	    } else {
+		closeOut = new ProjectCloseOut();
+		closeOut.setProject(projectRepository.findOne(projectId));
+	    }
+	    closeOut.setPunchListItemsFile(file);
+	    closeOutRepository.save(closeOut);
+	    bean = fileMapper.fileToFileBean(file);
+	    bean.setEntityRelatedId(closeOutId);
+	} catch (DataAccessException ex) {
+	    LOGGER.debug(ex.getMessage());
+	    LOGGER.info(ex.getMostSpecificCause().toString());
+	    throw exceptionHandler.getException(ex);
+	}
+
+	return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.maverik.realestate.service.PropertyManagementService#saveDailyReport
+     * (com.maverik.realestate.view.bean.DailyReportBean)
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
+	    GenericException.class, DataAccessException.class,
+	    DBException.class })
+    public DailyReportBean saveDailyReport(DailyReportBean bean)
+	    throws GenericException {
+	LOGGER.info("saveDailyReport({})", bean);
+
+	try {
+	    DailyReport dailyReport = dailyReportMapper.beanToEntity(bean);
+	    Project project = projectRepository.findOne(bean.getProject());
+	    if (project == null) {
+		throw new NoRecordFoundException(
+			"Unable to find Project object, following data has been submitted => ["
+				+ bean.getProject() + "]", NO_RECORD_FOUND_ID
+				+ " " + bean.getProject(), GENERIC_ERROR_CODE);
+	    }
+	    dailyReport.setProject(project);
+	    return dailyReportMapper.entityToBean(dailyReportRepository
+		    .save(dailyReport));
 	} catch (DataAccessException ex) {
 	    LOGGER.debug(ex.getMessage());
 	    LOGGER.info(ex.getMostSpecificCause().toString());

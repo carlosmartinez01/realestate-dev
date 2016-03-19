@@ -14,7 +14,7 @@ import com.maverik.realestate.view.bean.FileBean;
  * @author jorge
  *
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { PreConstructionSpecialMapper.class })
 public interface FileMapper {
 
     Filename fileBeanToFile(FileBean fileBean);

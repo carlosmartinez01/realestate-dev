@@ -29,7 +29,10 @@ import com.maverik.maverikannotations.sonar.SonarClassExclusion;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE, region = "property")
 public class Company implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1451988366656926043L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -36,13 +36,13 @@ import com.maverik.realestate.domain.entity.PropertyPurchase;
 import com.maverik.realestate.domain.entity.PurchaseExtension;
 import com.maverik.realestate.exception.DBException;
 import com.maverik.realestate.exception.GenericException;
-import com.maverik.realestate.exception.NoRecordFoundException;
 import com.maverik.realestate.handler.ExceptionHandler;
 import com.maverik.realestate.mapper.FileMapper;
 import com.maverik.realestate.mapper.LeaseExtensionMapper;
 import com.maverik.realestate.mapper.MeetingsMapper;
 import com.maverik.realestate.mapper.PermittingContactMapper;
 import com.maverik.realestate.mapper.PermittingTaskMapper;
+import com.maverik.realestate.mapper.ProjectASIMapper;
 import com.maverik.realestate.mapper.ProjectMapper;
 import com.maverik.realestate.mapper.ProjectRFIMapper;
 import com.maverik.realestate.mapper.PropertyContractMapper;
@@ -59,7 +59,9 @@ import com.maverik.realestate.repository.LeaseExtensionRepository;
 import com.maverik.realestate.repository.MeetingsRepository;
 import com.maverik.realestate.repository.PermittingAssignmentTaskRepository;
 import com.maverik.realestate.repository.PermittingContactRepository;
+import com.maverik.realestate.repository.ProjectASIRepository;
 import com.maverik.realestate.repository.ProjectRFIRepository;
+import com.maverik.realestate.repository.ProjectRepository;
 import com.maverik.realestate.repository.PropertyContractRepository;
 import com.maverik.realestate.repository.PropertyLOIRepository;
 import com.maverik.realestate.repository.PropertyLeaseRepository;
@@ -74,7 +76,6 @@ import com.maverik.realestate.view.bean.PermittingAssignmentTaskBean;
 import com.maverik.realestate.view.bean.PermittingContactBean;
 import com.maverik.realestate.view.bean.PermittingMeetingsViewBean;
 import com.maverik.realestate.view.bean.ProjectBean;
-import com.maverik.realestate.view.bean.ProjectRFIBean;
 import com.maverik.realestate.view.bean.PropertyBean;
 import com.maverik.realestate.view.bean.PropertyContractBean;
 import com.maverik.realestate.view.bean.PropertyContractViewBean;
@@ -92,10 +93,6 @@ public class PropertyManagementServiceImpl implements PropertyManagementService 
 
     private static final Logger LOGGER = LoggerFactory
 	    .getLogger(PropertyManagementServiceImpl.class);
-
-    private static final String NO_RECORD_FOUND_ID = "No record found related with id ";
-
-    private static final String GENERIC_ERROR_CODE = "-1";
 
     @Autowired
     private PropertyRepository propertyRepository;
@@ -195,6 +192,15 @@ public class PropertyManagementServiceImpl implements PropertyManagementService 
 
     @Autowired
     private ProjectRFIMapper rfiMapper;
+
+    @Autowired
+    private ProjectASIMapper asiMapper;
+
+    @Autowired
+    private ProjectASIRepository asiRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
@@ -1923,54 +1929,5 @@ public class PropertyManagementServiceImpl implements PropertyManagementService 
 	}
 
 	return listProperties;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.maverik.realestate.service.PropertyManagementService#findRFIByProperty
-     * (java.lang.Long)
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectRFIBean> findRFIByProperty(Long propertyId)
-	    throws GenericException {
-	LOGGER.info("findRFIByProperty({})", propertyId);
-
-	try {
-	    Property property = propertyRepository.findOne(propertyId);
-	    if (property == null) {
-		throw new NoRecordFoundException(
-			"Unable to find Property object, following data has been submitted => ["
-				+ propertyId + "]", NO_RECORD_FOUND_ID + " "
-				+ propertyId, GENERIC_ERROR_CODE);
-	    }
-	    List<ProjectRFIBean> rfis = new ArrayList<ProjectRFIBean>();
-	    property.getProjects().forEach(
-		    project -> project.getProjectRFIs().forEach(
-			    rfi -> rfis.add(rfiMapper.entityToBean(rfi))));
-	    return rfis;
-	} catch (DataAccessException ex) {
-	    LOGGER.debug(ex.getMessage());
-	    LOGGER.info(ex.getMostSpecificCause().toString());
-	    throw exceptionHandler.getException(ex);
-	}
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.maverik.realestate.service.PropertyManagementService#saveRFI(com.
-     * maverik.realestate.view.bean.ProjectRFIBean)
-     */
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {
-	    GenericException.class, DataAccessException.class,
-	    DBException.class })
-    public ProjectRFIBean saveRFI(ProjectRFIBean bean) throws GenericException {
-	// TODO Auto-generated method stub
-	return null;
     }
 }

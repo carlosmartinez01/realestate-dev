@@ -143,6 +143,10 @@ public class Property implements Serializable {
 	companies.add(company);
     }
 
+    public void addProject(Project project) {
+	projects.add(project);
+    }
+
     public String getName() {
 	return name;
     }
